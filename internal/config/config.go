@@ -30,7 +30,7 @@ func Load() *Config {
 	port := getEnvInt("KIZUNA_PORT", 8080)
 	host := getEnv("KIZUNA_HOST", "0.0.0.0")
 	dbPath := getEnv("KIZUNA_DB_PATH", "kizuna.db")
-	demoMode := getEnvBool("KIZUNA_DEMO_MODE", true) // Defaults to true on first run to provide rich out-of-the-box experience
+	demoMode := getEnvBool("KIZUNA_DEMO_MODE", false)
 	logLevel := getEnv("KIZUNA_LOG_LEVEL", "INFO")
 	dataDir := getEnv("KIZUNA_DATA_DIR", "./data")
 	dockerSocket := getEnv("KIZUNA_DOCKER_SOCKET", "/var/run/docker.sock")

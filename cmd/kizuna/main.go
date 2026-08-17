@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -72,9 +73,34 @@ func main() {
 	frontendFS := embedded.GetFrontendFS()
 	router := api.NewRouter(apiHandler, frontendFS)
 
-	serverAddr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
+	// Create TCP listener with intelligent port conflict fallback
+	var listener net.Listener
+	var actualPort = cfg.Port
+
+	initialListener, listenErr := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Host, cfg.Port))
+	if listenErr != nil {
+		if *portFlag == 0 {
+			// Try friendly homelab fallback ports
+			fallbackCandidates := []int{3030, 8081, 8082, 8085, 8095, 8888, 7070, 9099}
+			for _, candidatePort := range fallbackCandidates {
+				l, fbErr := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Host, candidatePort))
+				if fbErr == nil {
+					listener = l
+					actualPort = candidatePort
+					log.Printf("[HTTP] ⚡ Port %d in use; automatically bound to available port %d", cfg.Port, actualPort)
+					break
+				}
+			}
+		}
+		if listener == nil {
+			log.Fatalf("[FATAL] Could not bind to port %d: %v", cfg.Port, listenErr)
+		}
+	} else {
+		listener = initialListener
+	}
+
+	serverAddr := fmt.Sprintf("%s:%d", cfg.Host, actualPort)
 	srv := &http.Server{
-		Addr:         serverAddr,
 		Handler:      router,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
@@ -84,7 +110,7 @@ func main() {
 	// Start server in background goroutine
 	go func() {
 		log.Printf("[HTTP] Control Plane listening at http://%s", serverAddr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.Serve(listener); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("[FATAL] HTTP server error: %v", err)
 		}
 	}()
