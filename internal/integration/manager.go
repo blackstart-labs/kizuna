@@ -8,6 +8,8 @@ import (
 	"github.com/blackstart-labs/kizuna/internal/domain"
 	"github.com/blackstart-labs/kizuna/internal/integration/demo"
 	"github.com/blackstart-labs/kizuna/internal/integration/docker"
+	"github.com/blackstart-labs/kizuna/internal/integration/proxmox"
+	"github.com/blackstart-labs/kizuna/internal/integration/uptimekuma"
 )
 
 type Manager struct {
@@ -24,22 +26,53 @@ type Manager struct {
 	lastSync        time.Time
 }
 
-func NewManager(demoMode bool, dockerSocket string) *Manager {
+type ManagerConfig struct {
+	DemoMode           bool
+	DockerSocket       string
+	ProxmoxURL         string
+	ProxmoxTokenID     string
+	ProxmoxTokenSecret string
+	ProxmoxSkipVerify  bool
+	UptimeKumaURL      string
+	UptimeKumaKey      string
+}
+
+func NewManager(cfg ManagerConfig) *Manager {
 	m := &Manager{
 		drivers: make([]Driver, 0),
 	}
 
-	if demoMode {
+	if cfg.DemoMode {
 		m.RegisterDriver(demo.New())
 	}
 
 	// Register Docker driver if socket is accessible and not explicitly disabled
-	if dockerSocket != "disabled" {
-		docDriver := docker.New(dockerSocket)
+	if cfg.DockerSocket != "disabled" {
+		docDriver := docker.New(cfg.DockerSocket)
 		if docDriver.IsAvailable() {
 			m.dockerDriver = docDriver
 			m.RegisterDriver(docDriver)
 		}
+	}
+
+	// Register Proxmox VE driver if configured
+	if cfg.ProxmoxURL != "" && cfg.ProxmoxTokenID != "" && cfg.ProxmoxTokenSecret != "" {
+		pveDriver := proxmox.New(proxmox.ProxmoxConfig{
+			BaseURL:     cfg.ProxmoxURL,
+			TokenID:     cfg.ProxmoxTokenID,
+			TokenSecret: cfg.ProxmoxTokenSecret,
+			SkipVerify:  cfg.ProxmoxSkipVerify,
+		})
+		m.RegisterDriver(pveDriver)
+	}
+
+	// Register Uptime Kuma driver if configured
+	if cfg.UptimeKumaURL != "" {
+		kumaDriver := uptimekuma.New(uptimekuma.UptimeKumaConfig{
+			BaseURL: cfg.UptimeKumaURL,
+			APIKey:  cfg.UptimeKumaKey,
+		})
+		m.RegisterDriver(kumaDriver)
 	}
 
 	// Trigger initial sync

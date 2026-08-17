@@ -21,7 +21,7 @@ func setupTestHandler(t *testing.T) *APIHandler {
 	}
 	t.Cleanup(func() { db.Close() })
 
-	mgr := integration.NewManager(true, "disabled")
+	mgr := integration.NewManager(integration.ManagerConfig{DemoMode: true, DockerSocket: "disabled"})
 	svc := service.NewControlService(db, mgr, "0.1.0-test")
 	return NewAPIHandler(svc)
 }
