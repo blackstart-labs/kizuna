@@ -86,6 +86,9 @@ export interface Recommendation {
   resource_type?: string;
   resource_id?: string;
   potential_savings_bytes?: number;
+  estimated_savings?: string;
+  is_auto_fixable?: boolean;
+  auto_fix_action?: string;
   is_dismissed: boolean;
   created_at: string;
 }
