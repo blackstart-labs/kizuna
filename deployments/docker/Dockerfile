@@ -28,7 +28,7 @@ COPY cmd/ cmd/
 COPY --from=web-builder /app/internal/embedded/dist internal/embedded/dist
 
 RUN CGO_ENABLED=0 GOOS=linux go build \
-    -ldflags="-s -w -X main.Version=0.1.0-alpha" \
+    -ldflags="-s -w -X main.Version=0.2.0" \
     -o /app/kizuna ./cmd/kizuna
 
 # ==============================================================================

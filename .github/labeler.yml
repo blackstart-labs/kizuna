@@ -1,0 +1,78 @@
+# GitHub Actions PR Labeler Configuration
+# Automatically applies labels to Pull Requests based on modified file paths
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'cmd/**'
+          - 'internal/**'
+          - 'go.mod'
+          - 'go.sum'
+
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'web/**'
+
+database:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'internal/database/**'
+          - '*.sql'
+
+integrations:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'internal/integration/**'
+
+monitoring:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'internal/service/alerts*'
+          - 'internal/service/metrics*'
+          - 'web/src/features/alerts/**'
+          - 'web/src/features/incidents/**'
+
+topology:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'internal/service/correlation*'
+          - 'web/src/features/topology/**'
+
+optimizer:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'internal/service/optimizer*'
+          - 'web/src/features/optimizer/**'
+
+docker:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'Dockerfile*'
+          - 'docker-compose*.yml'
+          - 'deployments/**'
+          - '.dockerignore'
+
+ci/cd:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
+          - 'Makefile'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - '*.md'
+          - 'assets/**'
+
+i18n:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/i18n/**'
+
+security:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'internal/api/middleware/**'
+          - 'internal/config/**'
