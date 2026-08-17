@@ -154,3 +154,27 @@ type SelfMetrics struct {
 	DBSizeBytes      int64   `json:"db_size_bytes"`
 	AvgLatencyMs     float64 `json:"avg_latency_ms"`
 }
+
+// GraphNode represents an infrastructure node (service, database, host, storage).
+type GraphNode struct {
+	ID       string `json:"id"`
+	Label    string `json:"label"`
+	Type     string `json:"type"` // "service", "database", "host", "storage"
+	Status   string `json:"status"` // "online", "warning", "critical"
+	Category string `json:"category,omitempty"`
+	HostName string `json:"host_name,omitempty"`
+}
+
+// GraphEdge represents a directional dependency between nodes.
+type GraphEdge struct {
+	Source   string `json:"source"`
+	Target   string `json:"target"`
+	Relation string `json:"relation"` // "depends_on", "runs_on", "stores_on"
+	Impact   string `json:"impact"`   // "critical", "optional"
+}
+
+// DependencyGraph encapsulates nodes and edges for topology visualization.
+type DependencyGraph struct {
+	Nodes []GraphNode `json:"nodes"`
+	Edges []GraphEdge `json:"edges"`
+}

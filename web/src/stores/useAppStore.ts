@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type ActiveTab = 'dashboard' | 'services' | 'hosts' | 'containers' | 'incidents' | 'optimizer' | 'settings';
+export type ActiveTab = 'dashboard' | 'services' | 'hosts' | 'containers' | 'topology' | 'incidents' | 'optimizer' | 'settings';
 
 interface AppState {
   activeTab: ActiveTab;

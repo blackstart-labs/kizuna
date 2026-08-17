@@ -135,3 +135,24 @@ export interface SearchResult {
   url?: string;
   status?: string;
 }
+
+export interface GraphNode {
+  id: string;
+  label: string;
+  type: 'service' | 'database' | 'host' | 'storage';
+  status: 'online' | 'warning' | 'critical' | 'degraded' | 'offline';
+  category?: string;
+  host_name?: string;
+}
+
+export interface GraphEdge {
+  source: string;
+  target: string;
+  relation: string;
+  impact: string;
+}
+
+export interface DependencyGraph {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+}
