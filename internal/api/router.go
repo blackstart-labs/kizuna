@@ -33,6 +33,7 @@ func NewRouter(h *handlers.APIHandler, frontendFS fs.FS) *chi.Mux {
 		api.Post("/containers/{id}/stop", h.StopContainer)
 		api.Post("/containers/{id}/start", h.StartContainer)
 		api.Get("/incidents", h.ListIncidents)
+		api.Get("/dependencies", h.GetDependencyGraph)
 		api.Get("/recommendations", h.ListRecommendations)
 		api.Get("/self/metrics", h.GetSelfMetrics)
 		api.Get("/search", h.GlobalSearch)

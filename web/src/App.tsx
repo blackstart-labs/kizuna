@@ -10,8 +10,10 @@ import { ServicesView } from './features/services/ServicesView';
 import { HostsView } from './features/hosts/HostsView';
 import { ContainersView } from './features/containers/ContainersView';
 import { IncidentsView } from './features/incidents/IncidentsView';
+import { TopologyView } from './features/topology/TopologyView';
 import { OptimizerView } from './features/optimizer/OptimizerView';
 import { SettingsView } from './features/settings/SettingsView';
+import { DependencyGraph } from './types';
 
 export const App: React.FC = () => {
   const { activeTab } = useAppStore();
@@ -20,6 +22,7 @@ export const App: React.FC = () => {
   const { data: services, loading: srvLoading, refetch: refetchSrv } = useFetchData<Service[]>('/api/v1/services', 15000);
   const { data: hosts, loading: hstLoading, refetch: refetchHst } = useFetchData<Host[]>('/api/v1/hosts', 15000);
   const { data: containers, loading: cntLoading, refetch: refetchCnt } = useFetchData<Container[]>('/api/v1/containers', 10000);
+  const { data: graph, loading: graphLoading, refetch: refetchGraph } = useFetchData<DependencyGraph>('/api/v1/dependencies', 20000);
   const { data: incidents, loading: incLoading, refetch: refetchInc } = useFetchData<Incident[]>('/api/v1/incidents', 10000);
   const { data: recommendations, loading: recLoading, refetch: refetchRec } = useFetchData<Recommendation[]>('/api/v1/recommendations', 30000);
   const { data: metrics, loading: metLoading, refetch: refetchMet } = useFetchData<SelfMetrics>('/api/v1/self/metrics', 10000);
@@ -29,6 +32,7 @@ export const App: React.FC = () => {
     refetchSrv();
     refetchHst();
     refetchCnt();
+    refetchGraph();
     refetchInc();
     refetchRec();
     refetchMet();
@@ -44,6 +48,7 @@ export const App: React.FC = () => {
           {activeTab === 'services' && <ServicesView services={services} loading={srvLoading} />}
           {activeTab === 'hosts' && <HostsView hosts={hosts} loading={hstLoading} />}
           {activeTab === 'containers' && <ContainersView containers={containers} loading={cntLoading} onRefresh={refetchCnt} />}
+          {activeTab === 'topology' && <TopologyView graph={graph} loading={graphLoading} />}
           {activeTab === 'incidents' && <IncidentsView incidents={incidents} loading={incLoading} />}
           {activeTab === 'optimizer' && <OptimizerView recommendations={recommendations} loading={recLoading} />}
           {activeTab === 'settings' && <SettingsView metrics={metrics} loading={metLoading} />}

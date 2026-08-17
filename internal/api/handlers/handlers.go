@@ -96,6 +96,11 @@ func (h *APIHandler) ListIncidents(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, incidents)
 }
 
+func (h *APIHandler) GetDependencyGraph(w http.ResponseWriter, r *http.Request) {
+	graph := h.svc.GetDependencyGraph(r.Context())
+	respondJSON(w, http.StatusOK, graph)
+}
+
 func (h *APIHandler) ListRecommendations(w http.ResponseWriter, r *http.Request) {
 	recommendations := h.svc.ListRecommendations()
 	respondJSON(w, http.StatusOK, recommendations)
