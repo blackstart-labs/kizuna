@@ -1,0 +1,30 @@
+services:
+  kizuna:
+    image: blackstartlabs/kizuna:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kizuna
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - KIZUNA_HOST=0.0.0.0
+      - KIZUNA_PORT=8080
+      - KIZUNA_DB_PATH=/app/data/kizuna.db
+      - KIZUNA_DEMO_MODE=false
+      - KIZUNA_DOCKER_SOCKET=/var/run/docker.sock
+      # Optional: Proxmox VE Integration
+      # - KIZUNA_PROXMOX_URL=https://192.168.1.100:8006
+      # - KIZUNA_PROXMOX_TOKEN_ID=root@pam!kizuna
+      # - KIZUNA_PROXMOX_TOKEN_SECRET=your-secret-uuid
+      # - KIZUNA_PROXMOX_SKIP_VERIFY=true
+      # Optional: Uptime Kuma Sync
+      # - KIZUNA_UPTIME_KUMA_URL=https://kuma.yourdomain.com
+    volumes:
+      - ./data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "kizuna.enable=true"
+      - "kizuna.name=Kizuna Control Plane"
+      - "kizuna.category=Management"
