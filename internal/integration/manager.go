@@ -1,0 +1,111 @@
+package integration
+
+import (
+	"context"
+	"sync"
+	"time"
+
+	"github.com/blackstart-labs/kizuna/internal/domain"
+	"github.com/blackstart-labs/kizuna/internal/integration/demo"
+)
+
+type Manager struct {
+	mu      sync.RWMutex
+	drivers []Driver
+
+	// Cached state
+	services        []domain.Service
+	hosts           []domain.Host
+	containers      []domain.Container
+	incidents       []domain.Incident
+	recommendations []domain.Recommendation
+	lastSync        time.Time
+}
+
+func NewManager(demoMode bool) *Manager {
+	m := &Manager{
+		drivers: make([]Driver, 0),
+	}
+
+	if demoMode {
+		m.RegisterDriver(demo.New())
+	}
+
+	// Trigger initial sync
+	_ = m.SyncAll(context.Background())
+	return m
+}
+
+func (m *Manager) RegisterDriver(d Driver) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.drivers = append(m.drivers, d)
+}
+
+func (m *Manager) SyncAll(ctx context.Context) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	var allServices []domain.Service
+	var allHosts []domain.Host
+	var allContainers []domain.Container
+	var allIncidents []domain.Incident
+	var allRecommendations []domain.Recommendation
+
+	for _, d := range m.drivers {
+		if srvs, err := d.SyncServices(ctx); err == nil {
+			allServices = append(allServices, srvs...)
+		}
+		if hsts, err := d.SyncHosts(ctx); err == nil {
+			allHosts = append(allHosts, hsts...)
+		}
+		if cnts, err := d.SyncContainers(ctx); err == nil {
+			allContainers = append(allContainers, cnts...)
+		}
+		if incs, err := d.SyncIncidents(ctx); err == nil {
+			allIncidents = append(allIncidents, incs...)
+		}
+		if recs, err := d.SyncRecommendations(ctx); err == nil {
+			allRecommendations = append(allRecommendations, recs...)
+		}
+	}
+
+	m.services = allServices
+	m.hosts = allHosts
+	m.containers = allContainers
+	m.incidents = allIncidents
+	m.recommendations = allRecommendations
+	m.lastSync = time.Now()
+
+	return nil
+}
+
+func (m *Manager) GetServices() []domain.Service {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.services
+}
+
+func (m *Manager) GetHosts() []domain.Host {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.hosts
+}
+
+func (m *Manager) GetContainers() []domain.Container {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.containers
+}
+
+func (m *Manager) GetIncidents() []domain.Incident {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.incidents
+}
+
+func (m *Manager) GetRecommendations() []domain.Recommendation {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.recommendations
+}

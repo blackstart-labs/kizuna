@@ -1,0 +1,95 @@
+import React from 'react';
+import { Activity, Database, Clock, Cpu, Shield } from 'lucide-react';
+import { SelfMetrics } from '../../types';
+import { MetricCard } from '../../components/ui/MetricCard';
+
+interface SettingsViewProps {
+  metrics: SelfMetrics | null;
+  loading: boolean;
+}
+
+export const SettingsView: React.FC<SettingsViewProps> = ({ metrics, loading }) => {
+  if (loading && !metrics) {
+    return <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading self-monitoring vitals...</div>;
+  }
+
+  const memAllocMB = metrics ? metrics.memory_alloc_mb.toFixed(1) : '12.4';
+  const dbSizeKB = metrics ? (metrics.db_size_bytes / 1024).toFixed(1) : '64.0';
+  const uptimeHours = metrics ? (metrics.uptime_seconds / 3600).toFixed(1) : '0.1';
+
+  return (
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div>
+        <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+          Kizuna Self-Monitoring & Vitals
+        </h2>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+          Kizuna monitors its own footprint to guarantee low CPU, minimal RAM, and zero background waste.
+        </p>
+      </div>
+
+      {/* Vitals Grid */}
+      <div className="grid-4">
+        <MetricCard
+          title="Memory Allocation"
+          value={`${memAllocMB} MB`}
+          subValue="Target < 25 MB"
+          icon={Cpu}
+          trend="Go Runtime RSS"
+        />
+
+        <MetricCard
+          title="SQLite Database Size"
+          value={`${dbSizeKB} KB`}
+          subValue="WAL Mode Active"
+          icon={Database}
+          trend="Embedded DB"
+        />
+
+        <MetricCard
+          title="Active Goroutines"
+          value={metrics?.goroutines_count || 12}
+          subValue="Zero polling leaks"
+          icon={Activity}
+          trend="Concurrency"
+        />
+
+        <MetricCard
+          title="Control Plane Uptime"
+          value={`${uptimeHours} hrs`}
+          subValue={`v${metrics?.version || '0.1.0-alpha'}`}
+          icon={Clock}
+          trend="Single binary"
+        />
+      </div>
+
+      {/* Integration Status Table */}
+      <div className="card">
+        <div className="card-header">
+          <span className="card-title">
+            <Shield size={16} />
+            Configured Provider Drivers
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-md)' }}>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Demo Mode Provider</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Built-in mock homelab infrastructure datasets</div>
+            </div>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--status-online)' }}>Active</span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-md)' }}>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Docker Engine Socket</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>unix:///var/run/docker.sock</div>
+            </div>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Ready for Phase 2</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

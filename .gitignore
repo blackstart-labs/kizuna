@@ -1,0 +1,17 @@
+# Binaries & build artifacts
+bin/
+dist/
+*.exe
+*.test
+/kizuna
+kizuna.db*
+
+# Web dependencies and build
+web/node_modules/
+web/dist/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+*.log
