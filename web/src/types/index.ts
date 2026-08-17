@@ -156,3 +156,35 @@ export interface DependencyGraph {
   nodes: GraphNode[];
   edges: GraphEdge[];
 }
+
+export interface Alert {
+  id: string;
+  source: 'kizuna' | 'uptimekuma' | 'prometheus' | 'proxmox' | 'docker';
+  title: string;
+  description: string;
+  severity: 'critical' | 'warning' | 'info';
+  state: 'firing' | 'acknowledged' | 'resolved';
+  target_type: 'service' | 'host' | 'container';
+  target_id: string;
+  started_at: string;
+  resolved_at?: string;
+}
+
+export interface MetricPoint {
+  timestamp: number;
+  value: number;
+}
+
+export interface MetricSeries {
+  metric_name: string;
+  unit: string;
+  current: number;
+  points: MetricPoint[];
+}
+
+export interface HomelabTrends {
+  cpu_trend: MetricSeries;
+  memory_trend: MetricSeries;
+  storage_trend: MetricSeries;
+  latency_trend: MetricSeries;
+}

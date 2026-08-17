@@ -123,3 +123,34 @@ func TestContainerLifecycleActions(t *testing.T) {
 		t.Errorf("Expected status 200, got %d", wStart.Code)
 	}
 }
+
+func TestAlertsAndMetricsHandlers(t *testing.T) {
+	h := setupTestHandler(t)
+
+	// List Alerts
+	req := httptest.NewRequest("GET", "/api/v1/alerts", nil)
+	w := httptest.NewRecorder()
+	h.ListAlerts(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", w.Code)
+	}
+
+	// Ack Alert
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("id", "alt-001")
+	reqAck := httptest.NewRequest("POST", "/api/v1/alerts/alt-001/ack", nil)
+	reqAck = reqAck.WithContext(context.WithValue(reqAck.Context(), chi.RouteCtxKey, rctx))
+	wAck := httptest.NewRecorder()
+	h.AcknowledgeAlert(wAck, reqAck)
+	if wAck.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", wAck.Code)
+	}
+
+	// Metric Trends
+	reqTrends := httptest.NewRequest("GET", "/api/v1/metrics/trends", nil)
+	wTrends := httptest.NewRecorder()
+	h.GetMetricTrends(wTrends, reqTrends)
+	if wTrends.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", wTrends.Code)
+	}
+}

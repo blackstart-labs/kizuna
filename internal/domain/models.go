@@ -178,3 +178,39 @@ type DependencyGraph struct {
 	Nodes []GraphNode `json:"nodes"`
 	Edges []GraphEdge `json:"edges"`
 }
+
+// Alert represents an aggregated operational alert entry.
+type Alert struct {
+	ID          string    `json:"id"`
+	Source      string    `json:"source"` // "kizuna", "uptimekuma", "prometheus", "proxmox"
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Severity    string    `json:"severity"` // "critical", "warning", "info"
+	State       string    `json:"state"`    // "firing", "acknowledged", "resolved"
+	TargetType  string    `json:"target_type"` // "service", "host", "container"
+	TargetID    string    `json:"target_id"`
+	StartedAt   time.Time `json:"started_at"`
+	ResolvedAt  *time.Time`json:"resolved_at,omitempty"`
+}
+
+// MetricPoint represents a timestamped numeric data point.
+type MetricPoint struct {
+	Timestamp int64   `json:"timestamp"`
+	Value     float64 `json:"value"`
+}
+
+// MetricSeries represents time-series data for a KPI metric.
+type MetricSeries struct {
+	MetricName string        `json:"metric_name"`
+	Unit       string        `json:"unit"` // "%", "MB", "ms", "GB"
+	Current    float64       `json:"current"`
+	Points     []MetricPoint `json:"points"`
+}
+
+// HomelabTrends represents multi-dimensional historical metrics across the fleet.
+type HomelabTrends struct {
+	CPUTrend     MetricSeries `json:"cpu_trend"`
+	MemoryTrend  MetricSeries `json:"memory_trend"`
+	StorageTrend MetricSeries `json:"storage_trend"`
+	LatencyTrend MetricSeries `json:"latency_trend"`
+}
