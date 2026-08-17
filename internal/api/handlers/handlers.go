@@ -158,6 +158,40 @@ func (h *APIHandler) ListRecommendations(w http.ResponseWriter, r *http.Request)
 	respondJSON(w, http.StatusOK, recommendations)
 }
 
+func (h *APIHandler) ExecuteOptimizerAction(w http.ResponseWriter, r *http.Request) {
+	type ActionReq struct {
+		Action string `json:"action"`
+		DryRun bool   `json:"dry_run"`
+	}
+
+	var req ActionReq
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	res, err := h.svc.ExecuteOptimizerAction(r.Context(), req.Action, req.DryRun)
+	if err != nil {
+		respondJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+	respondJSON(w, http.StatusOK, res)
+}
+
+func (h *APIHandler) DismissRecommendation(w http.ResponseWriter, r *http.Request) {
+	id := chiURLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing recommendation id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.svc.DismissRecommendation(id); err != nil {
+		respondJSON(w, http.StatusNotFound, map[string]string{"error": err.Error()})
+		return
+	}
+	respondJSON(w, http.StatusOK, map[string]string{"status": "dismissed", "id": id})
+}
+
 func (h *APIHandler) GetSelfMetrics(w http.ResponseWriter, r *http.Request) {
 	metrics := h.svc.GetSelfMetrics()
 	respondJSON(w, http.StatusOK, metrics)

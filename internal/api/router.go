@@ -40,6 +40,8 @@ func NewRouter(h *handlers.APIHandler, frontendFS fs.FS) *chi.Mux {
 		api.Post("/alerts/webhook", h.IngestAlertWebhook)
 		api.Get("/metrics/trends", h.GetMetricTrends)
 		api.Get("/recommendations", h.ListRecommendations)
+		api.Post("/optimizer/execute", h.ExecuteOptimizerAction)
+		api.Post("/optimizer/recommendations/{id}/dismiss", h.DismissRecommendation)
 		api.Get("/self/metrics", h.GetSelfMetrics)
 		api.Get("/search", h.GlobalSearch)
 	})

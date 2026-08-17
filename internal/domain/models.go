@@ -111,6 +111,9 @@ type Recommendation struct {
 	ResourceType          string    `json:"resource_type,omitempty"`
 	ResourceID            string    `json:"resource_id,omitempty"`
 	PotentialSavingsBytes int64     `json:"potential_savings_bytes,omitempty"`
+	EstimatedSavings      string    `json:"estimated_savings,omitempty"`
+	IsAutoFixable         bool      `json:"is_auto_fixable"`
+	AutoFixAction         string    `json:"auto_fix_action,omitempty"`
 	IsDismissed           bool      `json:"is_dismissed"`
 	CreatedAt             time.Time `json:"created_at"`
 }

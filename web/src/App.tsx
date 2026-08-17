@@ -50,7 +50,7 @@ export const App: React.FC = () => {
           {activeTab === 'containers' && <ContainersView containers={containers} loading={cntLoading} onRefresh={refetchCnt} />}
           {activeTab === 'topology' && <TopologyView graph={graph} loading={graphLoading} />}
           {activeTab === 'incidents' && <IncidentsView incidents={incidents} loading={incLoading} />}
-          {activeTab === 'optimizer' && <OptimizerView recommendations={recommendations} loading={recLoading} />}
+          {activeTab === 'optimizer' && <OptimizerView recommendations={recommendations} loading={recLoading} onRefresh={refetchRec} />}
           {activeTab === 'settings' && <SettingsView metrics={metrics} loading={metLoading} />}
         </main>
       </div>

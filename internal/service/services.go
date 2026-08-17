@@ -15,6 +15,7 @@ type ControlService struct {
 	db        *database.DB
 	mgr       *integration.Manager
 	alertMgr  *AlertManager
+	optimizer *OptimizerEngine
 	startTime time.Time
 	version   string
 }
@@ -24,6 +25,7 @@ func NewControlService(db *database.DB, mgr *integration.Manager, version string
 		db:        db,
 		mgr:       mgr,
 		alertMgr:  NewAlertManager(),
+		optimizer: NewOptimizerEngine(),
 		startTime: time.Now(),
 		version:   version,
 	}
@@ -177,7 +179,19 @@ func (s *ControlService) ListIncidents() []domain.Incident {
 
 // ListRecommendations returns actionable intelligence items.
 func (s *ControlService) ListRecommendations() []domain.Recommendation {
-	return s.mgr.GetRecommendations()
+	recs := s.optimizer.ListRecommendations()
+	if len(recs) == 0 {
+		return s.mgr.GetRecommendations()
+	}
+	return recs
+}
+
+func (s *ControlService) ExecuteOptimizerAction(ctx context.Context, action string, dryRun bool) (map[string]interface{}, error) {
+	return s.optimizer.ExecuteAction(ctx, action, dryRun)
+}
+
+func (s *ControlService) DismissRecommendation(id string) error {
+	return s.optimizer.DismissRecommendation(id)
 }
 
 func (s *ControlService) RestartContainer(ctx context.Context, id string) error {
