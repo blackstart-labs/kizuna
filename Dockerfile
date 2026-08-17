@@ -3,11 +3,10 @@
 # Stage 1: Build React 19 Frontend
 FROM node:22-alpine AS web-builder
 WORKDIR /app/web
-RUN corepack enable && corepack prepare pnpm@latest --activate
-COPY web/package.json web/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY web/package.json ./
+RUN npm install
 COPY web/ ./
-RUN pnpm build
+RUN npm run build
 
 # Stage 2: Build Static Go Binary
 FROM golang:1.23-alpine AS go-builder

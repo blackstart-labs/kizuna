@@ -1,0 +1,8 @@
+node_modules
+web/node_modules
+bin
+.git
+.gitignore
+*.db
+*.log
+data
