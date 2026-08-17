@@ -36,6 +36,11 @@ export const HostsView: React.FC<HostsViewProps> = ({ hosts, loading }) => {
                     <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>{host.display_name}</h3>
                     <div className="mono" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                       {host.ip_address} · {host.os_name}
+                      {host.temperature_deg_c && host.temperature_deg_c > 0 && (
+                        <span style={{ marginLeft: '8px', color: host.temperature_deg_c > 75 ? 'var(--status-warning)' : 'var(--status-online)' }}>
+                          · {host.temperature_deg_c.toFixed(1)}°C
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
