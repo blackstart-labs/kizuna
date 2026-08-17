@@ -14,6 +14,7 @@ import (
 type ControlService struct {
 	db        *database.DB
 	mgr       *integration.Manager
+	alertMgr  *AlertManager
 	startTime time.Time
 	version   string
 }
@@ -22,6 +23,7 @@ func NewControlService(db *database.DB, mgr *integration.Manager, version string
 	return &ControlService{
 		db:        db,
 		mgr:       mgr,
+		alertMgr:  NewAlertManager(),
 		startTime: time.Now(),
 		version:   version,
 	}
@@ -111,7 +113,7 @@ func (s *ControlService) GetHealthSummary(ctx context.Context) domain.HomelabHea
 		RunningContainers: runningContainers,
 		TotalContainers:   len(containers),
 		ActiveIncidents:   activeIncidents,
-		FiringAlerts:      activeIncidents,
+		FiringAlerts:      len(s.alertMgr.ListAlerts("firing")),
 		PendingRecomms:    len(attention),
 		AttentionItems:    attention,
 		Storage:           storage,
@@ -188,4 +190,20 @@ func (s *ControlService) StopContainer(ctx context.Context, id string) error {
 
 func (s *ControlService) StartContainer(ctx context.Context, id string) error {
 	return s.mgr.StartContainer(ctx, id)
+}
+
+func (s *ControlService) ListAlerts(state string) []domain.Alert {
+	return s.alertMgr.ListAlerts(state)
+}
+
+func (s *ControlService) AcknowledgeAlert(id string) error {
+	return s.alertMgr.AcknowledgeAlert(id)
+}
+
+func (s *ControlService) ResolveAlert(id string) error {
+	return s.alertMgr.ResolveAlert(id)
+}
+
+func (s *ControlService) IngestAlert(alert domain.Alert) {
+	s.alertMgr.IngestAlert(alert)
 }

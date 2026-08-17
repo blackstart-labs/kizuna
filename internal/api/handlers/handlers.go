@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/blackstart-labs/kizuna/internal/domain"
 	"github.com/blackstart-labs/kizuna/internal/service"
 	"github.com/go-chi/chi/v5"
 )
@@ -99,6 +100,57 @@ func (h *APIHandler) ListIncidents(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) GetDependencyGraph(w http.ResponseWriter, r *http.Request) {
 	graph := h.svc.GetDependencyGraph(r.Context())
 	respondJSON(w, http.StatusOK, graph)
+}
+
+func (h *APIHandler) ListAlerts(w http.ResponseWriter, r *http.Request) {
+	state := r.URL.Query().Get("state")
+	alerts := h.svc.ListAlerts(state)
+	respondJSON(w, http.StatusOK, alerts)
+}
+
+func (h *APIHandler) AcknowledgeAlert(w http.ResponseWriter, r *http.Request) {
+	id := chiURLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing alert id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.svc.AcknowledgeAlert(id); err != nil {
+		respondJSON(w, http.StatusNotFound, map[string]string{"error": err.Error()})
+		return
+	}
+	respondJSON(w, http.StatusOK, map[string]string{"status": "acknowledged", "id": id})
+}
+
+func (h *APIHandler) ResolveAlert(w http.ResponseWriter, r *http.Request) {
+	id := chiURLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing alert id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.svc.ResolveAlert(id); err != nil {
+		respondJSON(w, http.StatusNotFound, map[string]string{"error": err.Error()})
+		return
+	}
+	respondJSON(w, http.StatusOK, map[string]string{"status": "resolved", "id": id})
+}
+
+func (h *APIHandler) IngestAlertWebhook(w http.ResponseWriter, r *http.Request) {
+	var alert domain.Alert
+	if err := json.NewDecoder(r.Body).Decode(&alert); err != nil {
+		http.Error(w, "invalid json payload", http.StatusBadRequest)
+		return
+	}
+
+	h.svc.IngestAlert(alert)
+	respondJSON(w, http.StatusCreated, map[string]string{"status": "ingested"})
+}
+
+func (h *APIHandler) GetMetricTrends(w http.ResponseWriter, r *http.Request) {
+	rangeHours := 24
+	trends := h.svc.GetHomelabTrends(r.Context(), rangeHours)
+	respondJSON(w, http.StatusOK, trends)
 }
 
 func (h *APIHandler) ListRecommendations(w http.ResponseWriter, r *http.Request) {

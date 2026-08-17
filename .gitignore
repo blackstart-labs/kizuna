@@ -1,6 +1,6 @@
 # Binaries & build artifacts
 bin/
-dist/
+/dist/
 *.exe
 *.test
 /kizuna
