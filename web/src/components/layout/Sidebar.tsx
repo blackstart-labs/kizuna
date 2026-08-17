@@ -9,17 +9,23 @@ import {
   Sparkles,
   Settings,
   Flame,
+  Wifi,
 } from 'lucide-react';
 import { useAppStore, ActiveTab } from '../../stores/useAppStore';
 
+import { useFetchData } from '../../hooks/useFetchData';
+
 export const Sidebar: React.FC = () => {
   const { activeTab, setActiveTab } = useAppStore();
+  const { data: selfMetrics } = useFetchData<{ version: string }>('/api/v1/self/metrics', 60000);
+  const version = selfMetrics?.version ? `v${selfMetrics.version}` : 'v0.3.0';
 
   const navItems: { id: ActiveTab; label: string; icon: React.ComponentType<{ size?: number }> }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'services', label: 'Services', icon: Layers },
     { id: 'hosts', label: 'Hosts & Nodes', icon: Server },
     { id: 'containers', label: 'Containers', icon: Box },
+    { id: 'network', label: 'Network Clients', icon: Wifi },
     { id: 'topology', label: 'Topology', icon: GitFork },
     { id: 'incidents', label: 'Incidents', icon: AlertOctagon },
     { id: 'optimizer', label: 'Optimizer', icon: Sparkles },
@@ -83,7 +89,7 @@ export const Sidebar: React.FC = () => {
       <div style={{ padding: '14px 16px', borderTop: '1px solid var(--border-subtle)', fontSize: '11px', color: 'var(--text-muted)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span>Kizuna Core</span>
-          <span className="mono">v0.1.0-alpha</span>
+          <span className="mono">{version}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
           <span className="pulse-dot" style={{ backgroundColor: 'var(--status-online)', width: '6px', height: '6px' }} />

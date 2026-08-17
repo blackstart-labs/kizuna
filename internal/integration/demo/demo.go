@@ -410,48 +410,6 @@ func (d *DemoDriver) SyncContainers(ctx context.Context) ([]domain.Container, er
 			CreatedAt:        now.Add(-96 * time.Hour),
 			UpdatedAt:        now,
 		},
-		{
-			ID:               "cnt-dashy-stale",
-			HostID:           "host-titan-01",
-			HostName:         "titan-primary",
-			ContainerID:      "6123498701aa",
-			Name:             "dashy-old-backup",
-			Image:            "lissy93/dashy:v2.1.1",
-			ImageSizeBytes:   838860800, // 800 MB
-			Status:           "Exited (0) 5 days ago",
-			State:            "exited",
-			RestartCount:     0,
-			CPUPercent:       0.0,
-			MemoryUsageBytes: 0,
-			MemoryLimitBytes: 0,
-			MemoryUsagePct:   0.0,
-			Ports:            []string{},
-			IsWasteCandidate: true,
-			WasteReason:      "Stopped container occupying 800 MB of image layer storage",
-			CreatedAt:        now.Add(-240 * time.Hour),
-			UpdatedAt:        now,
-		},
-		{
-			ID:               "cnt-flapping-worker",
-			HostID:           "host-atlas-02",
-			HostName:         "atlas-proxmox",
-			ContainerID:      "1928374650bb",
-			Name:             "immich-ml-worker",
-			Image:            "ghcr.io/immich-app/immich-machine-learning:release",
-			ImageSizeBytes:   2147483648, // 2 GB
-			Status:           "Restarting (1) 12 seconds ago",
-			State:            "restarting",
-			RestartCount:     17,
-			CPUPercent:       94.2,
-			MemoryUsageBytes: 4194304000, // 4 GB (OOM Killing)
-			MemoryLimitBytes: 4294967296,
-			MemoryUsagePct:   98.5,
-			Ports:            []string{"3003/tcp"},
-			IsWasteCandidate: false,
-			WasteReason:      "High restart frequency: 17 crashes today due to memory ceiling",
-			CreatedAt:        now.Add(-24 * time.Hour),
-			UpdatedAt:        now,
-		},
 	}, nil
 }
 
@@ -474,22 +432,6 @@ func (d *DemoDriver) SyncIncidents(ctx context.Context) ([]domain.Incident, erro
 			},
 			StartedAt: now.Add(-2 * time.Hour),
 		},
-		{
-			ID:               "inc-2026-0817-02",
-			Title:            "Memory Exhaustion Loop on Machine Learning Worker",
-			Summary:          "Container immich-ml-worker has crashed and restarted 17 times in the last 6 hours due to memory limit saturation (98.5%).",
-			Severity:         "critical",
-			Status:           "active",
-			RootCauseType:    "container",
-			RootCauseID:      "cnt-flapping-worker",
-			ImpactedServices: []string{"Immich Photo Cloud"},
-			Events: []domain.IncidentTimelineEvent{
-				{Timestamp: now.Add(-240 * time.Minute), Component: "Docker Engine", Message: "Container exceeded 4.0GB cgroup RAM allocation", Type: "trigger"},
-				{Timestamp: now.Add(-180 * time.Minute), Component: "Linux OOM Killer", Message: "OOM killer killed PID 18491 (python3 / worker.py)", Type: "cascade"},
-				{Timestamp: now.Add(-60 * time.Minute), Component: "Docker Supervisor", Message: "Restart limit hit: 17 continuous crash loops", Type: "cascade"},
-			},
-			StartedAt: now.Add(-4 * time.Hour),
-		},
 	}, nil
 }
 
@@ -509,18 +451,6 @@ func (d *DemoDriver) SyncRecommendations(ctx context.Context) ([]domain.Recommen
 			CreatedAt:             now.Add(-1 * time.Hour),
 		},
 		{
-			ID:                    "rec-002",
-			Category:              "reliability",
-			Severity:              "critical",
-			Title:                 "Increase Memory Limit on immich-ml-worker",
-			WhyItMatters:          "Container is stuck in a crash loop (17 restarts) because facial recognition models exceed the 4 GB allocation ceiling.",
-			ActionSuggestion:      "Raise memory limit to 6 GB in apps/storage/docker-compose.yml or assign host swap.",
-			ResourceType:          "container",
-			ResourceID:            "cnt-flapping-worker",
-			IsDismissed:           false,
-			CreatedAt:             now.Add(-2 * time.Hour),
-		},
-		{
 			ID:                    "rec-003",
 			Category:              "performance",
 			Severity:              "tip",
@@ -529,7 +459,7 @@ func (d *DemoDriver) SyncRecommendations(ctx context.Context) ([]domain.Recommen
 			ActionSuggestion:      "Tune shared_buffers to 512MB and max_worker_processes to 4 in postgresql.conf.",
 			ResourceType:          "database",
 			IsDismissed:           false,
-			CreatedAt:             now.Add(-6 * time.Hour),
+			CreatedAt:             now.Add(-3 * time.Hour),
 		},
 	}, nil
 }

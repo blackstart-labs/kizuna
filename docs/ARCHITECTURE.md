@@ -58,6 +58,7 @@ type Driver interface {
 - **`proxmox`**: HTTPS REST API integration using Proxmox API Tokens (`PVEAPIToken=USER@REALM!TOKENID=SECRET`).
 - **`uptimekuma`**: Heartbeat and status-page telemetry ingest.
 - **`sensors`**: Linux `/sys/class/thermal` and `/proc/meminfo` ingestion.
+- **`network`**: Linux kernel `/proc/net/arp` and `/proc/net/dev` driver with local router Option 12 DHCP resolution, Docker container bridge name mapping, bandwidth rate calculations, and integrated low-latency CDN Internet Speed Test Engine.
 - **`demo`**: High-fidelity out-of-the-box demonstration dataset.
 
 ---

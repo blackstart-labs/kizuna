@@ -154,3 +154,39 @@ func TestAlertsAndMetricsHandlers(t *testing.T) {
 		t.Errorf("Expected status 200, got %d", wTrends.Code)
 	}
 }
+
+func TestNetworkHandlers(t *testing.T) {
+	h := setupTestHandler(t)
+
+	// Test /api/v1/network/clients
+	reqClients := httptest.NewRequest("GET", "/api/v1/network/clients", nil)
+	wClients := httptest.NewRecorder()
+	h.ListNetworkClients(wClients, reqClients)
+	if wClients.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", wClients.Code)
+	}
+
+	var clients []domain.NetworkClient
+	if err := json.Unmarshal(wClients.Body.Bytes(), &clients); err != nil {
+		t.Fatalf("Failed to parse network clients response: %v", err)
+	}
+	if len(clients) == 0 {
+		t.Errorf("Expected at least 1 network client, got 0")
+	}
+
+	// Test /api/v1/network/telemetry
+	reqTelem := httptest.NewRequest("GET", "/api/v1/network/telemetry", nil)
+	wTelem := httptest.NewRecorder()
+	h.GetNetworkTelemetry(wTelem, reqTelem)
+	if wTelem.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", wTelem.Code)
+	}
+
+	var summary domain.NetworkTelemetrySummary
+	if err := json.Unmarshal(wTelem.Body.Bytes(), &summary); err != nil {
+		t.Fatalf("Failed to parse network telemetry response: %v", err)
+	}
+	if len(summary.BandwidthHistory) == 0 {
+		t.Errorf("Expected bandwidth history data points, got 0")
+	}
+}

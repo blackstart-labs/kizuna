@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Layers, Server, Box, AlertTriangle, Cpu, HardDrive, BellRing, CheckCircle2, TrendingUp } from 'lucide-react';
+import { Layers, Server, Box, AlertTriangle, Cpu, HardDrive, BellRing, CheckCircle2 } from 'lucide-react';
 import { HomelabHealthSummary, Alert, HomelabTrends } from '../../types';
 import { MetricCard } from '../../components/ui/MetricCard';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { AttentionBanner } from '../../components/ui/AttentionBanner';
 import { StorageBar } from '../../components/ui/StorageBar';
-import { MetricSparkline } from '../../components/ui/MetricSparkline';
+import { GrafanaTimeSeriesPanel } from '../../components/charts/GrafanaTimeSeriesPanel';
 import { useAppStore } from '../../stores/useAppStore';
 import { useFetchData } from '../../hooks/useFetchData';
 
@@ -83,50 +83,52 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ summary, loading }
         />
       </div>
 
-      {/* Time-Series Resource Telemetry Sparklines */}
+      {/* Grafana-Style Live Infrastructure Telemetry Panels */}
       {trends && (
-        <div className="card">
-          <div className="card-header">
-            <span className="card-title">
-              <TrendingUp size={16} />
-              24-Hour Infrastructure Telemetry & Resource Trends
-            </span>
-            <span className="mono" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Rollup Interval: 1h</span>
-          </div>
+        <div className="grid-2">
+          <GrafanaTimeSeriesPanel
+            title="Fleet Compute Load & Memory Pressure"
+            subtitle="Real-time multi-core CPU utilization and RAM allocation curves"
+            icon={Cpu}
+            height={160}
+            unit="%"
+            series={[
+              {
+                name: 'Fleet CPU Load',
+                color: 'var(--accent-primary)',
+                data: trends.cpu_trend.points.map((p) => ({ timestamp: p.timestamp, value: p.value })),
+                unit: '%',
+              },
+              {
+                name: 'Fleet Memory Pressure',
+                color: '#38bdf8',
+                data: trends.memory_trend.points.map((p) => ({ timestamp: p.timestamp, value: p.value })),
+                unit: '%',
+              },
+            ]}
+          />
 
-          <div className="grid-4" style={{ marginTop: '8px' }}>
-            <div style={{ padding: '12px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-md)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Fleet CPU Load</span>
-                <span className="mono" style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{trends.cpu_trend.current.toFixed(1)}%</span>
-              </div>
-              <MetricSparkline points={trends.cpu_trend.points} color="var(--accent-primary)" height={36} />
-            </div>
-
-            <div style={{ padding: '12px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-md)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>RAM Pressure</span>
-                <span className="mono" style={{ fontWeight: 700, color: '#38bdf8' }}>{trends.memory_trend.current.toFixed(1)}%</span>
-              </div>
-              <MetricSparkline points={trends.memory_trend.points} color="#38bdf8" height={36} />
-            </div>
-
-            <div style={{ padding: '12px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-md)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>ZFS Allocation</span>
-                <span className="mono" style={{ fontWeight: 700, color: 'var(--status-warning)' }}>{trends.storage_trend.current.toFixed(1)}%</span>
-              </div>
-              <MetricSparkline points={trends.storage_trend.points} color="var(--status-warning)" height={36} />
-            </div>
-
-            <div style={{ padding: '12px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-md)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Avg Response</span>
-                <span className="mono" style={{ fontWeight: 700, color: 'var(--status-online)' }}>{trends.latency_trend.current.toFixed(1)} ms</span>
-              </div>
-              <MetricSparkline points={trends.latency_trend.points} color="var(--status-online)" height={36} />
-            </div>
-          </div>
+          <GrafanaTimeSeriesPanel
+            title="Storage Occupancy & Latency Trends"
+            subtitle="ZFS storage pool capacity and service reverse proxy latency"
+            icon={HardDrive}
+            height={160}
+            unit="%"
+            series={[
+              {
+                name: 'Storage Pool Allocation',
+                color: 'var(--status-warning)',
+                data: trends.storage_trend.points.map((p) => ({ timestamp: p.timestamp, value: p.value })),
+                unit: '%',
+              },
+              {
+                name: 'Response Latency',
+                color: 'var(--status-online)',
+                data: trends.latency_trend.points.map((p) => ({ timestamp: p.timestamp, value: p.value })),
+                unit: 'ms',
+              },
+            ]}
+          />
         </div>
       )}
 
@@ -269,10 +271,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ summary, loading }
 
             <div style={{ padding: '12px 14px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Raise immich-ml-worker Memory Limit</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Prevent OOM restart crash loops</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Enable WAL Mode on PostgreSQL</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Improve write throughput and query latency</div>
               </div>
-              <StatusBadge status="critical" label="Crash Loop" />
+              <StatusBadge status="info" label="Database Tip" />
             </div>
           </div>
         </div>

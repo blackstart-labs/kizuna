@@ -199,3 +199,62 @@ export interface HomelabTrends {
   storage_trend: MetricSeries;
   latency_trend: MetricSeries;
 }
+
+export interface NetworkClient {
+  id: string;
+  ip: string;
+  mac: string;
+  hostname: string;
+  vendor: string;
+  interface: string;
+  device_type: 'router' | 'host' | 'server' | 'container' | 'workstation' | 'iot' | 'phone' | 'unknown';
+  state: 'active' | 'reachable' | 'stale';
+  is_gateway: boolean;
+  last_seen: string;
+}
+
+export interface NetworkInterfaceMetric {
+  interface: string;
+  rx_bytes_sec: number;
+  tx_bytes_sec: number;
+  total_rx_bytes: number;
+  total_tx_bytes: number;
+  total_rx_gb: number;
+  total_tx_gb: number;
+  timestamp: string;
+}
+
+export interface NetworkThroughputPoint {
+  timestamp: string;
+  rx_kbps: number;
+  tx_kbps: number;
+}
+
+export interface SpeedTestResult {
+  id: string;
+  timestamp: string;
+  ping_ms: number;
+  jitter_ms: number;
+  download_mbps: number;
+  upload_mbps: number;
+  server_location: string;
+  isp: string;
+  status: 'completed' | 'running' | 'failed' | 'idle';
+}
+
+export interface NetworkTelemetrySummary {
+  total_clients: number;
+  active_clients: number;
+  gateway_ip: string;
+  primary_interface: string;
+  total_rx_rate_kbps: number;
+  total_tx_rate_kbps: number;
+  total_rx_rate_mbps: number;
+  total_tx_rate_mbps: number;
+  total_download_gb: number;
+  total_upload_gb: number;
+  interfaces: NetworkInterfaceMetric[];
+  bandwidth_history: NetworkThroughputPoint[];
+  latest_speed_test?: SpeedTestResult;
+}
+

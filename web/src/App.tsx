@@ -4,11 +4,12 @@ import { Header } from './components/layout/Header';
 import { CommandPalette } from './components/layout/CommandPalette';
 import { useAppStore } from './stores/useAppStore';
 import { useFetchData } from './hooks/useFetchData';
-import { HomelabHealthSummary, Service, Host, Container, Incident, Recommendation, SelfMetrics } from './types';
+import { HomelabHealthSummary, Service, Host, Container, Incident, Recommendation, SelfMetrics, NetworkClient, NetworkTelemetrySummary } from './types';
 import { DashboardView } from './features/dashboard/DashboardView';
 import { ServicesView } from './features/services/ServicesView';
 import { HostsView } from './features/hosts/HostsView';
 import { ContainersView } from './features/containers/ContainersView';
+import { NetworkClientsView } from './features/network/NetworkClientsView';
 import { IncidentsView } from './features/incidents/IncidentsView';
 import { TopologyView } from './features/topology/TopologyView';
 import { OptimizerView } from './features/optimizer/OptimizerView';
@@ -22,6 +23,8 @@ export const App: React.FC = () => {
   const { data: services, loading: srvLoading, refetch: refetchSrv } = useFetchData<Service[]>('/api/v1/services', 15000);
   const { data: hosts, loading: hstLoading, refetch: refetchHst } = useFetchData<Host[]>('/api/v1/hosts', 15000);
   const { data: containers, loading: cntLoading, refetch: refetchCnt } = useFetchData<Container[]>('/api/v1/containers', 10000);
+  const { data: networkClients, loading: netLoading, refetch: refetchNet } = useFetchData<NetworkClient[]>('/api/v1/network/clients', 10000);
+  const { data: networkTelemetry, refetch: refetchTelem } = useFetchData<NetworkTelemetrySummary>('/api/v1/network/telemetry', 5000);
   const { data: graph, loading: graphLoading, refetch: refetchGraph } = useFetchData<DependencyGraph>('/api/v1/dependencies', 20000);
   const { data: incidents, loading: incLoading, refetch: refetchInc } = useFetchData<Incident[]>('/api/v1/incidents', 10000);
   const { data: recommendations, loading: recLoading, refetch: refetchRec } = useFetchData<Recommendation[]>('/api/v1/recommendations', 30000);
@@ -32,6 +35,8 @@ export const App: React.FC = () => {
     refetchSrv();
     refetchHst();
     refetchCnt();
+    refetchNet();
+    refetchTelem();
     refetchGraph();
     refetchInc();
     refetchRec();
@@ -48,6 +53,7 @@ export const App: React.FC = () => {
           {activeTab === 'services' && <ServicesView services={services} loading={srvLoading} />}
           {activeTab === 'hosts' && <HostsView hosts={hosts} loading={hstLoading} />}
           {activeTab === 'containers' && <ContainersView containers={containers} loading={cntLoading} onRefresh={refetchCnt} />}
+          {activeTab === 'network' && <NetworkClientsView clients={networkClients} telemetry={networkTelemetry} loading={netLoading} onRefresh={refetchNet} />}
           {activeTab === 'topology' && <TopologyView graph={graph} loading={graphLoading} />}
           {activeTab === 'incidents' && <IncidentsView incidents={incidents} loading={incLoading} />}
           {activeTab === 'optimizer' && <OptimizerView recommendations={recommendations} loading={recLoading} onRefresh={refetchRec} />}

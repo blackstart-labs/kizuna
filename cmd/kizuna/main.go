@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -20,7 +21,7 @@ import (
 	"github.com/blackstart-labs/kizuna/internal/service"
 )
 
-var Version = "0.2.0"
+var Version = "0.3.0"
 
 func main() {
 	demoFlag := flag.Bool("demo", false, "Run Kizuna with built-in realistic homelab demo data")
@@ -72,9 +73,14 @@ func main() {
 	frontendFS := embedded.GetFrontendFS()
 	router := api.NewRouter(apiHandler, frontendFS)
 
+	// Create TCP listener on the configured port
+	listener, listenErr := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Host, cfg.Port))
+	if listenErr != nil {
+		log.Fatalf("[FATAL] Port %d is already in use by another service.\n       Please stop the conflicting process, or specify a custom port using '--port <number>' or 'KIZUNA_PORT=<number>'.\n       Error: %v", cfg.Port, listenErr)
+	}
+
 	serverAddr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	srv := &http.Server{
-		Addr:         serverAddr,
 		Handler:      router,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
@@ -84,7 +90,7 @@ func main() {
 	// Start server in background goroutine
 	go func() {
 		log.Printf("[HTTP] Control Plane listening at http://%s", serverAddr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.Serve(listener); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("[FATAL] HTTP server error: %v", err)
 		}
 	}()

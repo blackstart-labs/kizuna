@@ -2,21 +2,25 @@ package integration
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/blackstart-labs/kizuna/internal/domain"
 	"github.com/blackstart-labs/kizuna/internal/integration/demo"
 	"github.com/blackstart-labs/kizuna/internal/integration/docker"
+	"github.com/blackstart-labs/kizuna/internal/integration/network"
 	"github.com/blackstart-labs/kizuna/internal/integration/proxmox"
 	"github.com/blackstart-labs/kizuna/internal/integration/sensors"
 	"github.com/blackstart-labs/kizuna/internal/integration/uptimekuma"
 )
 
 type Manager struct {
-	mu           sync.RWMutex
-	drivers      []Driver
-	dockerDriver *docker.DockerDriver
+	mu            sync.RWMutex
+	drivers       []Driver
+	dockerDriver  *docker.DockerDriver
+	networkDriver *network.NetworkDriver
 
 	// Cached state
 	services        []domain.Service
@@ -58,6 +62,22 @@ func NewManager(cfg ManagerConfig) *Manager {
 			m.RegisterDriver(sensors.New())
 		}
 	}
+
+	// Always initialize real network driver for ARP client discovery, bandwidth telemetry, and speed testing
+	m.networkDriver = network.NewNetworkDriver()
+	if m.dockerDriver != nil {
+		m.networkDriver.SetContainerLookup(func(ip, mac string) string {
+			cntMap := m.dockerDriver.GetContainerNetworkMap(context.Background())
+			if name, ok := cntMap[ip]; ok {
+				return name
+			}
+			if name, ok := cntMap[strings.ToLower(mac)]; ok {
+				return name
+			}
+			return ""
+		})
+	}
+	m.RegisterDriver(m.networkDriver)
 
 	// Register Proxmox VE driver if configured
 	if cfg.ProxmoxURL != "" && cfg.ProxmoxTokenID != "" && cfg.ProxmoxTokenSecret != "" {
@@ -175,6 +195,34 @@ func (m *Manager) StopContainer(ctx context.Context, id string) error {
 func (m *Manager) StartContainer(ctx context.Context, id string) error {
 	if m.dockerDriver != nil {
 		return m.dockerDriver.StartContainer(ctx, id)
+	}
+	return nil
+}
+
+func (m *Manager) ScanNetworkClients(ctx context.Context) ([]domain.NetworkClient, error) {
+	if m.networkDriver != nil {
+		return m.networkDriver.ScanClients(ctx)
+	}
+	return []domain.NetworkClient{}, nil
+}
+
+func (m *Manager) GetNetworkThroughput(ctx context.Context) ([]domain.NetworkInterfaceMetric, error) {
+	if m.networkDriver != nil {
+		return m.networkDriver.GetThroughput(ctx)
+	}
+	return []domain.NetworkInterfaceMetric{}, nil
+}
+
+func (m *Manager) RunSpeedTest(ctx context.Context) (*domain.SpeedTestResult, error) {
+	if m.networkDriver != nil {
+		return m.networkDriver.RunSpeedTest(ctx)
+	}
+	return nil, fmt.Errorf("network driver not initialized")
+}
+
+func (m *Manager) GetLatestSpeedTest() *domain.SpeedTestResult {
+	if m.networkDriver != nil {
+		return m.networkDriver.GetLatestSpeedTest()
 	}
 	return nil
 }

@@ -34,8 +34,8 @@ func TestGetHealthSummary(t *testing.T) {
 		t.Errorf("Expected running containers > 0, got %d", summary.RunningContainers)
 	}
 
-	if summary.ActiveIncidents != 2 {
-		t.Errorf("Expected 2 active incidents in demo mode, got %d", summary.ActiveIncidents)
+	if summary.ActiveIncidents != 1 {
+		t.Errorf("Expected 1 active incident in demo mode, got %d", summary.ActiveIncidents)
 	}
 
 	if len(summary.AttentionItems) == 0 {

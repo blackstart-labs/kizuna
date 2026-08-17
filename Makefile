@@ -1,7 +1,7 @@
 .PHONY: all build test lint dev clean docker
 
 BINARY_NAME=bin/kizuna
-VERSION=0.2.0
+VERSION=0.3.0
 
 all: test build
 
