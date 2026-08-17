@@ -276,6 +276,24 @@ func (h *APIHandler) GetNetworkTelemetry(w http.ResponseWriter, r *http.Request)
 	respondJSON(w, http.StatusOK, summary)
 }
 
+func (h *APIHandler) RunSpeedTest(w http.ResponseWriter, r *http.Request) {
+	result, err := h.svc.RunSpeedTest(r.Context())
+	if err != nil {
+		http.Error(w, "Failed to execute speed test: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	respondJSON(w, http.StatusOK, result)
+}
+
+func (h *APIHandler) GetLatestSpeedTest(w http.ResponseWriter, r *http.Request) {
+	result := h.svc.GetLatestSpeedTest()
+	if result == nil {
+		respondJSON(w, http.StatusOK, map[string]interface{}{"status": "idle"})
+		return
+	}
+	respondJSON(w, http.StatusOK, result)
+}
+
 func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

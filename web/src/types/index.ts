@@ -219,6 +219,8 @@ export interface NetworkInterfaceMetric {
   tx_bytes_sec: number;
   total_rx_bytes: number;
   total_tx_bytes: number;
+  total_rx_gb: number;
+  total_tx_gb: number;
   timestamp: string;
 }
 
@@ -228,6 +230,18 @@ export interface NetworkThroughputPoint {
   tx_kbps: number;
 }
 
+export interface SpeedTestResult {
+  id: string;
+  timestamp: string;
+  ping_ms: number;
+  jitter_ms: number;
+  download_mbps: number;
+  upload_mbps: number;
+  server_location: string;
+  isp: string;
+  status: 'completed' | 'running' | 'failed' | 'idle';
+}
+
 export interface NetworkTelemetrySummary {
   total_clients: number;
   active_clients: number;
@@ -235,7 +249,12 @@ export interface NetworkTelemetrySummary {
   primary_interface: string;
   total_rx_rate_kbps: number;
   total_tx_rate_kbps: number;
+  total_rx_rate_mbps: number;
+  total_tx_rate_mbps: number;
+  total_download_gb: number;
+  total_upload_gb: number;
   interfaces: NetworkInterfaceMetric[];
   bandwidth_history: NetworkThroughputPoint[];
+  latest_speed_test?: SpeedTestResult;
 }
 

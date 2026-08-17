@@ -231,12 +231,15 @@ func (s *ControlService) GetNetworkTelemetry(ctx context.Context) (*domain.Netwo
 	ifaces, _ := s.mgr.GetNetworkThroughput(ctx)
 
 	var totalRxRate, totalTxRate float64
+	var totalRxBytes, totalTxBytes uint64
 	primaryIface := "eth0"
 	gatewayIP := "192.168.1.1"
 
 	for _, iface := range ifaces {
 		totalRxRate += iface.RxBytesPerSec
 		totalTxRate += iface.TxBytesPerSec
+		totalRxBytes += iface.TotalRxBytes
+		totalTxBytes += iface.TotalTxBytes
 		if !strings.HasPrefix(iface.Interface, "br-") && !strings.HasPrefix(iface.Interface, "docker") && iface.Interface != "lo" {
 			primaryIface = iface.Interface
 		}
@@ -249,7 +252,7 @@ func (s *ControlService) GetNetworkTelemetry(ctx context.Context) (*domain.Netwo
 		}
 	}
 
-	// Generate 10-point rolling history for Grafana charts
+	// Generate 12-point rolling history for Grafana charts
 	now := time.Now()
 	history := make([]domain.NetworkThroughputPoint, 12)
 	for i := 0; i < 12; i++ {
@@ -269,14 +272,30 @@ func (s *ControlService) GetNetworkTelemetry(ctx context.Context) (*domain.Netwo
 		}
 	}
 
+	rxKbps := (totalRxRate * 8) / 1000
+	txKbps := (totalTxRate * 8) / 1000
+
 	return &domain.NetworkTelemetrySummary{
 		TotalClients:     len(clients),
 		ActiveClients:    len(clients),
 		GatewayIP:        gatewayIP,
 		PrimaryInterface: primaryIface,
-		TotalRxRateKbps:  (totalRxRate * 8) / 1000,
-		TotalTxRateKbps:  (totalTxRate * 8) / 1000,
+		TotalRxRateKbps:  rxKbps,
+		TotalTxRateKbps:  txKbps,
+		TotalRxRateMbps:  rxKbps / 1000,
+		TotalTxRateMbps:  txKbps / 1000,
+		TotalDownloadGB:  float64(totalRxBytes) / (1024 * 1024 * 1024),
+		TotalUploadGB:    float64(totalTxBytes) / (1024 * 1024 * 1024),
 		Interfaces:       ifaces,
 		BandwidthHistory: history,
+		LatestSpeedTest:  s.mgr.GetLatestSpeedTest(),
 	}, nil
+}
+
+func (s *ControlService) RunSpeedTest(ctx context.Context) (*domain.SpeedTestResult, error) {
+	return s.mgr.RunSpeedTest(ctx)
+}
+
+func (s *ControlService) GetLatestSpeedTest() *domain.SpeedTestResult {
+	return s.mgr.GetLatestSpeedTest()
 }

@@ -44,6 +44,8 @@ func NewRouter(h *handlers.APIHandler, frontendFS fs.FS) *chi.Mux {
 		api.Post("/optimizer/recommendations/{id}/dismiss", h.DismissRecommendation)
 		api.Get("/network/clients", h.ListNetworkClients)
 		api.Get("/network/telemetry", h.GetNetworkTelemetry)
+		api.Post("/network/speedtest/run", h.RunSpeedTest)
+		api.Get("/network/speedtest/latest", h.GetLatestSpeedTest)
 		api.Get("/self/metrics", h.GetSelfMetrics)
 		api.Get("/search", h.GlobalSearch)
 	})

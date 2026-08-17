@@ -19,16 +19,26 @@ type DockerDriver struct {
 }
 
 type dockerContainerSummary struct {
-	ID      string            `json:"Id"`
-	Names   []string          `json:"Names"`
-	Image   string            `json:"Image"`
-	ImageID string            `json:"ImageID"`
-	State   string            `json:"State"`
-	Status  string            `json:"Status"`
-	Created int64             `json:"Created"`
-	Ports   []dockerPort      `json:"Ports"`
-	Labels  map[string]string `json:"Labels"`
-	SizeRw  int64             `json:"SizeRw"`
+	ID              string                `json:"Id"`
+	Names           []string              `json:"Names"`
+	Image           string                `json:"Image"`
+	ImageID         string                `json:"ImageID"`
+	State           string                `json:"State"`
+	Status          string                `json:"Status"`
+	Created         int64                 `json:"Created"`
+	Ports           []dockerPort          `json:"Ports"`
+	Labels          map[string]string     `json:"Labels"`
+	SizeRw          int64                 `json:"SizeRw"`
+	NetworkSettings dockerNetworkSettings `json:"NetworkSettings"`
+}
+
+type dockerNetworkEndpoint struct {
+	IPAddress  string `json:"IPAddress"`
+	MacAddress string `json:"MacAddress"`
+}
+
+type dockerNetworkSettings struct {
+	Networks map[string]dockerNetworkEndpoint `json:"Networks"`
 }
 
 type dockerPort struct {
@@ -242,6 +252,31 @@ func (d *DockerDriver) SyncContainers(ctx context.Context) ([]domain.Container, 
 	}
 
 	return containers, nil
+}
+
+// GetContainerNetworkMap builds a lookup table from IP/MAC to container name.
+func (d *DockerDriver) GetContainerNetworkMap(ctx context.Context) map[string]string {
+	res := make(map[string]string)
+	raw, err := d.getContainers(ctx)
+	if err != nil {
+		return res
+	}
+
+	for _, c := range raw {
+		if len(c.Names) == 0 {
+			continue
+		}
+		name := strings.TrimPrefix(c.Names[0], "/")
+		for _, net := range c.NetworkSettings.Networks {
+			if net.IPAddress != "" {
+				res[net.IPAddress] = name
+			}
+			if net.MacAddress != "" {
+				res[strings.ToLower(net.MacAddress)] = name
+			}
+		}
+	}
+	return res
 }
 
 func (d *DockerDriver) SyncIncidents(ctx context.Context) ([]domain.Incident, error) {

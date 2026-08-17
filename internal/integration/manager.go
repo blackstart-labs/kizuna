@@ -2,6 +2,8 @@ package integration
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -61,8 +63,20 @@ func NewManager(cfg ManagerConfig) *Manager {
 		}
 	}
 
-	// Always initialize real network driver for ARP client discovery & bandwidth telemetry
+	// Always initialize real network driver for ARP client discovery, bandwidth telemetry, and speed testing
 	m.networkDriver = network.NewNetworkDriver()
+	if m.dockerDriver != nil {
+		m.networkDriver.SetContainerLookup(func(ip, mac string) string {
+			cntMap := m.dockerDriver.GetContainerNetworkMap(context.Background())
+			if name, ok := cntMap[ip]; ok {
+				return name
+			}
+			if name, ok := cntMap[strings.ToLower(mac)]; ok {
+				return name
+			}
+			return ""
+		})
+	}
 	m.RegisterDriver(m.networkDriver)
 
 	// Register Proxmox VE driver if configured
@@ -197,4 +211,18 @@ func (m *Manager) GetNetworkThroughput(ctx context.Context) ([]domain.NetworkInt
 		return m.networkDriver.GetThroughput(ctx)
 	}
 	return []domain.NetworkInterfaceMetric{}, nil
+}
+
+func (m *Manager) RunSpeedTest(ctx context.Context) (*domain.SpeedTestResult, error) {
+	if m.networkDriver != nil {
+		return m.networkDriver.RunSpeedTest(ctx)
+	}
+	return nil, fmt.Errorf("network driver not initialized")
+}
+
+func (m *Manager) GetLatestSpeedTest() *domain.SpeedTestResult {
+	if m.networkDriver != nil {
+		return m.networkDriver.GetLatestSpeedTest()
+	}
+	return nil
 }

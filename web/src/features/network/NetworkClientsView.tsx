@@ -12,8 +12,15 @@ import {
   Activity,
   ArrowDownCircle,
   ArrowUpCircle,
+  Gauge,
+  Zap,
+  Play,
+  RotateCw,
+  Clock,
+  Globe,
+  Database,
 } from 'lucide-react';
-import { NetworkClient, NetworkTelemetrySummary } from '../../types';
+import { NetworkClient, NetworkTelemetrySummary, SpeedTestResult } from '../../types';
 import { GrafanaTimeSeriesPanel } from '../../components/charts/GrafanaTimeSeriesPanel';
 
 interface NetworkClientsViewProps {
@@ -27,16 +34,41 @@ export const NetworkClientsView: React.FC<NetworkClientsViewProps> = ({
   clients,
   telemetry,
   loading,
+  onRefresh,
 }) => {
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
+  const [speedTestRunning, setSpeedTestRunning] = useState(false);
+  const [activeSpeedResult, setActiveSpeedResult] = useState<SpeedTestResult | null>(
+    telemetry?.latest_speed_test || null
+  );
+
+  const runSpeedTest = async () => {
+    setSpeedTestRunning(true);
+    try {
+      const res = await fetch('/api/v1/network/speedtest/run', { method: 'POST' });
+      if (res.ok) {
+        const data: SpeedTestResult = await res.json();
+        setActiveSpeedResult(data);
+        if (onRefresh) onRefresh();
+      }
+    } catch (e) {
+      console.error('Speed test failed:', e);
+    } finally {
+      setSpeedTestRunning(false);
+    }
+  };
 
   if (loading && !clients) {
-    return <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Discovering connected network clients & ARP table...</div>;
+    return (
+      <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
+        <div className="pulse-dot" style={{ width: '12px', height: '12px', backgroundColor: 'var(--accent-primary)', marginBottom: '12px' }} />
+        <div>Discovering connected network clients & kernel telemetry...</div>
+      </div>
+    );
   }
 
   const clientList = clients || [];
-
   const types = ['all', 'router', 'server', 'container', 'workstation', 'phone', 'iot'];
 
   const filteredClients = clientList.filter((c) => {
@@ -101,10 +133,12 @@ export const NetworkClientsView: React.FC<NetworkClientsViewProps> = ({
 
   const totalRxKbps = telemetry?.total_rx_rate_kbps || 0;
   const totalTxKbps = telemetry?.total_tx_rate_kbps || 0;
+  const totalDownloadGB = telemetry?.total_download_gb || 0;
+  const totalUploadGB = telemetry?.total_upload_gb || 0;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Header Summary Cards */}
+      {/* Top 4 Vitals Bar: Connected, Gateway, Live Throughput */}
       <div className="grid-4">
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -119,7 +153,7 @@ export const NetworkClientsView: React.FC<NetworkClientsViewProps> = ({
             {clientList.length} Clients
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-            Live ARP & Neighbor Table
+            LAN Subnet & Containers
           </div>
         </div>
 
@@ -136,46 +170,156 @@ export const NetworkClientsView: React.FC<NetworkClientsViewProps> = ({
             {telemetry?.gateway_ip || '192.168.1.1'}
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-            Primary Subnet Router
+            Primary Router Gateway
           </div>
         </div>
 
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              Network Ingress (RX)
+              Total Transferred (RX/TX)
+            </span>
+            <div style={{ padding: '6px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-sm)', color: 'var(--status-warning)' }}>
+              <Database size={16} />
+            </div>
+          </div>
+          <div className="mono" style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>
+            {(totalDownloadGB + totalUploadGB).toFixed(2)} GB
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+            ↓ {totalDownloadGB.toFixed(1)} GB &nbsp;•&nbsp; ↑ {totalUploadGB.toFixed(1)} GB
+          </div>
+        </div>
+
+        <div className="card">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+              Live Speed (RX / TX)
             </span>
             <div style={{ padding: '6px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-sm)', color: 'var(--status-online)' }}>
-              <ArrowDownCircle size={16} />
+              <Zap size={16} />
             </div>
           </div>
-          <div className="mono" style={{ fontSize: '20px', fontWeight: 700, color: 'var(--status-online)' }}>
-            {totalRxKbps > 1000 ? `${(totalRxKbps / 1000).toFixed(2)} MB/s` : `${totalRxKbps.toFixed(1)} KB/s`}
+          <div className="mono" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--status-online)' }}>
+            ↓ {totalRxKbps > 1000 ? `${(totalRxKbps / 1000).toFixed(1)} MB/s` : `${totalRxKbps.toFixed(0)} KB/s`}
+            <span style={{ color: 'var(--text-muted)', margin: '0 6px' }}>•</span>
+            <span style={{ color: '#38bdf8' }}>↑ {totalTxKbps > 1000 ? `${(totalTxKbps / 1000).toFixed(1)} MB/s` : `${totalTxKbps.toFixed(0)} KB/s`}</span>
           </div>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-            Host Interface: <span className="mono">{telemetry?.primary_interface || 'eth0'}</span>
-          </div>
-        </div>
-
-        <div className="card">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              Network Egress (TX)
-            </span>
-            <div style={{ padding: '6px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-sm)', color: '#38bdf8' }}>
-              <ArrowUpCircle size={16} />
-            </div>
-          </div>
-          <div className="mono" style={{ fontSize: '20px', fontWeight: 700, color: '#38bdf8' }}>
-            {totalTxKbps > 1000 ? `${(totalTxKbps / 1000).toFixed(2)} MB/s` : `${totalTxKbps.toFixed(1)} KB/s`}
-          </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-            Outgoing Traffic Rate
+            Active NIC: <span className="mono">{telemetry?.primary_interface || 'enp4s0'}</span>
           </div>
         </div>
       </div>
 
-      {/* Grafana Live Bandwidth Panel */}
+      {/* Internet Speed Checker Section */}
+      <div className="card" style={{ border: '1px solid var(--border-default)', background: 'linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-surface-elevated) 100%)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ padding: '8px', backgroundColor: 'var(--accent-primary-glow)', borderRadius: 'var(--radius-md)', color: 'var(--accent-primary)' }}>
+              <Gauge size={20} />
+            </div>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                Internet Speed Benchmark & Latency Analyzer
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                Measure real broadband download, upload, ping, and jitter via low-latency CDN edge
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={runSpeedTest}
+            disabled={speedTestRunning}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              backgroundColor: speedTestRunning ? 'var(--bg-surface-hover)' : 'var(--accent-primary)',
+              color: speedTestRunning ? 'var(--text-muted)' : 'var(--text-inverse)',
+              borderRadius: 'var(--radius-md)',
+              fontWeight: 600,
+              fontSize: '13px',
+              border: 'none',
+              cursor: speedTestRunning ? 'not-allowed' : 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            {speedTestRunning ? (
+              <>
+                <RotateCw size={14} className="spin" />
+                Testing Speed...
+              </>
+            ) : (
+              <>
+                <Play size={14} fill="currentColor" />
+                Run Speed Test
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Speedometer Metrics Grid */}
+        <div className="grid-4">
+          <div style={{ padding: '16px', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--status-online)', marginBottom: '8px' }}>
+              <ArrowDownCircle size={18} />
+              <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' }}>Download Speed</span>
+            </div>
+            <div className="mono" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)' }}>
+              {activeSpeedResult ? activeSpeedResult.download_mbps.toFixed(1) : '--'}
+              <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-muted)', marginLeft: '6px' }}>Mbps</span>
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+              {activeSpeedResult ? 'Direct HTTP stream throughput' : 'Ready to benchmark'}
+            </div>
+          </div>
+
+          <div style={{ padding: '16px', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', marginBottom: '8px' }}>
+              <ArrowUpCircle size={18} />
+              <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' }}>Upload Speed</span>
+            </div>
+            <div className="mono" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)' }}>
+              {activeSpeedResult ? activeSpeedResult.upload_mbps.toFixed(1) : '--'}
+              <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-muted)', marginLeft: '6px' }}>Mbps</span>
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+              {activeSpeedResult ? 'Upstream POST bandwidth' : 'Ready to benchmark'}
+            </div>
+          </div>
+
+          <div style={{ padding: '16px', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-primary)', marginBottom: '8px' }}>
+              <Clock size={18} />
+              <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' }}>Ping Latency</span>
+            </div>
+            <div className="mono" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)' }}>
+              {activeSpeedResult ? activeSpeedResult.ping_ms.toFixed(0) : '--'}
+              <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-muted)', marginLeft: '6px' }}>ms</span>
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+              Jitter: <span className="mono">{activeSpeedResult ? `${activeSpeedResult.jitter_ms.toFixed(1)} ms` : '--'}</span>
+            </div>
+          </div>
+
+          <div style={{ padding: '16px', backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+              <Globe size={18} />
+              <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' }}>Target Edge</span>
+            </div>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {activeSpeedResult ? activeSpeedResult.server_location : 'Cloudflare Edge'}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>
+              Provider: <span style={{ fontWeight: 600 }}>{activeSpeedResult?.isp || 'Broadband'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Grafana-Style Live Bandwidth Panel */}
       <GrafanaTimeSeriesPanel
         title="Fleet Real-Time Network Bandwidth (Ingress vs Egress)"
         subtitle="Aggregated interface transfer throughput rates across host physical NICs and virtual bridge adapters"
@@ -227,12 +371,12 @@ export const NetworkClientsView: React.FC<NetworkClientsViewProps> = ({
         </div>
       </div>
 
-      {/* Connected Clients Table */}
+      {/* Discovered Connected Clients Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface-elevated)', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              <th style={{ padding: '12px 16px' }}>Device / Hostname</th>
+              <th style={{ padding: '12px 16px' }}>Device Name / Hostname</th>
               <th style={{ padding: '12px 16px' }}>IP Address</th>
               <th style={{ padding: '12px 16px' }}>MAC Address</th>
               <th style={{ padding: '12px 16px' }}>Hardware Manufacturer</th>

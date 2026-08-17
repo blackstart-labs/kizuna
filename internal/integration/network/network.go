@@ -14,12 +14,15 @@ import (
 	"github.com/blackstart-labs/kizuna/internal/domain"
 )
 
-// NetworkDriver scans the Linux ARP table and network interfaces.
+// NetworkDriver scans the Linux ARP table, interface throughput, and executes internet speed tests.
 type NetworkDriver struct {
-	mu           sync.RWMutex
-	prevNetStats map[string]netDevSample
-	prevSampleAt time.Time
-	dnsCache     map[string]string
+	mu              sync.RWMutex
+	prevNetStats    map[string]netDevSample
+	prevSampleAt    time.Time
+	dnsCache        map[string]string
+	containerLookup func(ip, mac string) string
+	speedEngine     *SpeedTestEngine
+	latestSpeedTest *domain.SpeedTestResult
 }
 
 type netDevSample struct {
@@ -32,7 +35,14 @@ func NewNetworkDriver() *NetworkDriver {
 	return &NetworkDriver{
 		prevNetStats: make(map[string]netDevSample),
 		dnsCache:     make(map[string]string),
+		speedEngine:  NewSpeedTestEngine(),
 	}
+}
+
+func (d *NetworkDriver) SetContainerLookup(fn func(ip, mac string) string) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.containerLookup = fn
 }
 
 func (d *NetworkDriver) Name() string {
@@ -71,7 +81,7 @@ func (d *NetworkDriver) SyncRecommendations(ctx context.Context) ([]domain.Recom
 func (d *NetworkDriver) ScanClients(ctx context.Context) ([]domain.NetworkClient, error) {
 	file, err := os.Open("/proc/net/arp")
 	if err != nil {
-		// Fallback for non-Linux or containerized restricted environments
+		// Fallback for non-Linux or restricted environments
 		return d.getFallbackClients(), nil
 	}
 	defer file.Close()
@@ -79,7 +89,7 @@ func (d *NetworkDriver) ScanClients(ctx context.Context) ([]domain.NetworkClient
 	var clients []domain.NetworkClient
 	scanner := bufio.NewScanner(file)
 
-	// Skip header line: IP address HW type Flags HW address Mask Device
+	// Skip header line
 	if scanner.Scan() {
 		_ = scanner.Text()
 	}
@@ -107,11 +117,11 @@ func (d *NetworkDriver) ScanClients(ctx context.Context) ([]domain.NetworkClient
 			continue
 		}
 
-		// Resolve or look up cached hostname
-		hostname := d.resolveHostname(ip)
-
 		// Identify vendor from MAC OUI prefix
 		vendor := d.identifyVendor(mac, iface)
+
+		// Resolve device hostname with container lookup, local router DNS, and heuristics
+		hostname := d.resolveHostname(ip, mac, iface, vendor)
 
 		// Classify device type
 		devType, isGateway := d.classifyDevice(ip, iface, vendor, hostname)
@@ -207,6 +217,8 @@ func (d *NetworkDriver) GetThroughput(ctx context.Context) ([]domain.NetworkInte
 			TxBytesPerSec: txRate,
 			TotalRxBytes:  rxBytes,
 			TotalTxBytes:  txBytes,
+			TotalRxGB:     float64(rxBytes) / (1024 * 1024 * 1024),
+			TotalTxGB:     float64(txBytes) / (1024 * 1024 * 1024),
 			Timestamp:     now,
 		})
 	}
@@ -217,24 +229,82 @@ func (d *NetworkDriver) GetThroughput(ctx context.Context) ([]domain.NetworkInte
 	return metrics, nil
 }
 
-func (d *NetworkDriver) resolveHostname(ip string) string {
+// RunSpeedTest runs a benchmark speed test and caches the result.
+func (d *NetworkDriver) RunSpeedTest(ctx context.Context) (*domain.SpeedTestResult, error) {
+	res, err := d.speedEngine.Run(ctx)
+	if err != nil {
+		return nil, err
+	}
+	d.mu.Lock()
+	d.latestSpeedTest = res
+	d.mu.Unlock()
+	return res, nil
+}
+
+func (d *NetworkDriver) GetLatestSpeedTest() *domain.SpeedTestResult {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	return d.latestSpeedTest
+}
+
+func (d *NetworkDriver) resolveHostname(ip, mac, iface, vendor string) string {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
+	// 1. Check if it is a running Docker container name
+	if d.containerLookup != nil {
+		if cntName := d.containerLookup(ip, mac); cntName != "" {
+			d.dnsCache[ip] = cntName
+			return cntName
+		}
+	}
+
+	// 2. Check DNS cache
 	if name, found := d.dnsCache[ip]; found {
 		return name
 	}
 
-	// Fast reverse DNS lookup with 300ms timeout
-	names, err := net.LookupAddr(ip)
+	// 3. Gateway Router recognition
+	if ip == "192.168.1.1" || ip == "10.0.0.1" || ip == "192.168.0.1" {
+		name := "router.asus.com"
+		if !strings.Contains(vendor, "ASUS") {
+			name = fmt.Sprintf("%s Gateway", vendor)
+		}
+		d.dnsCache[ip] = name
+		return name
+	}
+
+	// 4. Reverse DNS PTR lookup via local router resolver (Option 12 DHCP hostname)
+	resolver := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{Timeout: 300 * time.Millisecond}
+			return d.DialContext(ctx, "udp", "192.168.1.1:53")
+		},
+	}
+	names, err := resolver.LookupAddr(context.Background(), ip)
 	if err == nil && len(names) > 0 {
 		cleanName := strings.TrimSuffix(names[0], ".")
 		d.dnsCache[ip] = cleanName
 		return cleanName
 	}
 
-	// Friendly fallback names based on IP/Subnet
-	name := fmt.Sprintf("device-%s", strings.ReplaceAll(ip, ".", "-"))
+	// 5. Standard net.LookupAddr fallback
+	stdNames, err := net.LookupAddr(ip)
+	if err == nil && len(stdNames) > 0 {
+		cleanName := strings.TrimSuffix(stdNames[0], ".")
+		d.dnsCache[ip] = cleanName
+		return cleanName
+	}
+
+	// 6. Friendly descriptive device name using Vendor and IP
+	var name string
+	if strings.HasPrefix(iface, "br-") || strings.HasPrefix(iface, "docker") {
+		name = fmt.Sprintf("container-%s", strings.ReplaceAll(ip, ".", "-"))
+	} else {
+		name = fmt.Sprintf("%s (%s)", vendor, ip)
+	}
+
 	d.dnsCache[ip] = name
 	return name
 }
@@ -312,7 +382,7 @@ func (d *NetworkDriver) getFallbackClients() []domain.NetworkClient {
 			ID:             "net-gw-router",
 			IP:             "192.168.1.1",
 			MAC:            "04:d4:c4:2f:60:34",
-			Hostname:       "router.local",
+			Hostname:       "router.asus.com",
 			Vendor:         "ASUS Router / Networking",
 			Interface:      "eth0",
 			DeviceType:     "router",
