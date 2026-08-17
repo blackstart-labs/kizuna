@@ -1,23 +1,38 @@
 <div align="center">
 
+<a href="#-key-features">
+  <img src="assets/logo.png" alt="Kizuna Logo" width="140" />
+</a>
+
 # Kizuna · 絆
 
-**"Your homelab. One control plane."**
+**Your homelab. One control plane.**
 
 [![CI](https://github.com/blackstart-labs/kizuna/actions/workflows/ci.yml/badge.svg)](https://github.com/blackstart-labs/kizuna/actions)
+[![Docker Hub](https://img.shields.io/docker/v/marufsarker/kizuna?sort=semver&logo=docker&label=Docker%20Hub&color=0284c7)](https://hub.docker.com/r/marufsarker/kizuna)
+[![Image Size](https://img.shields.io/badge/Docker%20Image-%3C%2020%20MB-06b6d4?logo=docker)](Dockerfile)
+[![Memory Footprint](https://img.shields.io/badge/RAM%20Usage-%3C%2025%20MB-10b981?logo=speedtest)](cmd/kizuna)
 [![Go Report Card](https://goreportcard.com/badge/github.com/blackstart-labs/kizuna)](https://goreportcard.com/report/github.com/blackstart-labs/kizuna)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Docker Image Size](https://img.shields.io/badge/docker%20image-%3C%2025%20MB-blue)](Dockerfile)
-[![Memory Footprint](https://img.shields.io/badge/RAM%20Usage-%3C%2025%20MB-brightgreen)](cmd/kizuna)
+[![GitHub Stars](https://img.shields.io/github/stars/blackstart-labs/kizuna?style=social)](https://github.com/blackstart-labs/kizuna)
 
-*A single-binary, ultra-lightweight homelab control plane that integrates, aggregates, correlates, and visualizes your infrastructure without replacing specialized tools.*
+<p align="center">
+  <em>An ultra-lightweight, single-binary homelab control plane that integrates, aggregates, correlates, and visualizes your infrastructure without replacing specialized tools.</em>
+</p>
 
-[Features](#-key-features) •
-[Quickstart](#-quickstart) •
-[Architecture](#-architecture) •
-[Configuration](#-configuration-reference) •
-[Philosophy](#-philosophy--non-goals) •
-[API Reference](#-api-endpoints)
+---
+
+**[📖 Documentation Hub](docs/)** •
+**[📑 User Manual](docs/USER_MANUAL.md)** •
+**[🏗️ Technical Architecture](docs/ARCHITECTURE.md)** •
+**[🔌 Integrations Guide](docs/INTEGRATIONS.md)** •
+**[🤝 Contributing](docs/CONTRIBUTING.md)**
+
+**Translations:**
+[🇯🇵 日本語](docs/i18n/USER_MANUAL.ja.md) &nbsp;•&nbsp;
+[🇪🇸 Español](docs/i18n/USER_MANUAL.es.md) &nbsp;•&nbsp;
+[🇩🇪 Deutsch](docs/i18n/USER_MANUAL.de.md) &nbsp;•&nbsp;
+[🇨🇳 简体中文](docs/i18n/USER_MANUAL.zh-CN.md)
 
 </div>
 
@@ -25,11 +40,11 @@
 
 ## 🧭 Philosophy & Non-Goals
 
-Homelab operators don't need another heavy enterprise dashboard that consumes more memory than the services it monitors.
+Homelab operators don't need another heavy enterprise monitoring stack that consumes more RAM and CPU than the services it monitors.
 
 - **Integrate, don't replace**: Kizuna connects to Docker, Proxmox VE, and Uptime Kuma rather than trying to reimplement them.
 - **Single Binary / Single Container**: No Redis, Kafka, Elasticsearch, or background microservice sprawl.
-- **Embedded SQLite (WAL)**: Zero configuration, pure-Go database driver (`modernc.org/sqlite`) with CGO-free portability.
+- **Embedded SQLite (WAL)**: Zero configuration, pure-Go database driver (`modernc.org/sqlite`) with CGO-free static compilation.
 - **Sub-15ms Responses**: Low latency, lightweight goroutines, and zero polling memory leaks.
 
 ```
@@ -60,9 +75,10 @@ Homelab operators don't need another heavy enterprise dashboard that consumes mo
 ## ✨ Key Features
 
 - ⚡ **Global Command Palette (`⌘K` / `Ctrl+K`)**: Keyboard-first search across all registered services, physical hosts, and container workloads.
-- 🐳 **Native Docker Socket Driver**: Direct `/var/run/docker.sock` communication over Unix sockets with zero 3rd-party SDK bloat. Supports safe container lifecycle controls (Restart, Stop, Start).
+- 🐳 **Native Docker Socket Driver**: Direct `/var/run/docker.sock` communication over Unix sockets with zero 3rd-party Docker SDK dependencies (< 25 MB image footprint). Supports safe container lifecycle controls (Restart, Stop with confirmation guard, Start).
 - 🖥️ **Proxmox VE & Hypervisor Driver**: Auto-discovers physical nodes, CPU cores, RAM pressure, ZFS storage pool occupancy, and LXC containers via API Token auth.
-- ⏱️ **Uptime Kuma Sync**: Heartbeat telemetry, monitor status (up/down/pending), uptime percentages, and ping latencies.
+- ⏱️ **Uptime Kuma Sync**: Ingests heartbeat telemetry, monitor status (up/down/pending), uptime percentages, and ping latencies.
+- 🌡️ **Hardware & Thermal Telemetry**: Reads host CPU core temperatures via Linux `/sys/class/thermal` and memory allocation from `/proc/meminfo`.
 - 🕸️ **Infrastructure Topology & Blast Radius**: Interactive 3-tier dependency matrix. Selecting any node dynamically calculates its cascading outage blast radius.
 - 🚨 **Unified Alert & Incident Management**: Correlates multi-service flapping into single root-cause incident timelines with Prometheus webhook ingestion.
 - 📈 **24-Hour Telemetry Sparklines**: Lightweight, responsive SVG sparkline curves for Fleet CPU, RAM Pressure, ZFS Allocation, and Latency.
@@ -74,12 +90,10 @@ Homelab operators don't need another heavy enterprise dashboard that consumes mo
 
 ### Option 1: Docker Compose (Recommended)
 
-Create a `docker-compose.yml`:
-
 ```yaml
 services:
   kizuna:
-    image: blackstartlabs/kizuna:latest
+    image: marufsarker/kizuna:latest
     container_name: kizuna
     restart: unless-stopped
     ports:
@@ -89,6 +103,7 @@ services:
       - KIZUNA_PORT=8080
       - KIZUNA_DB_PATH=/app/data/kizuna.db
       - KIZUNA_DEMO_MODE=false
+      - KIZUNA_DOCKER_SOCKET=/var/run/docker.sock
     volumes:
       - ./data:/app/data
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -98,7 +113,7 @@ Run:
 ```bash
 docker compose up -d
 ```
-Access the control plane at `http://localhost:8080`.
+Access the control plane at **`http://localhost:8080`**.
 
 ---
 
@@ -181,6 +196,12 @@ All settings can be configured via environment variables or a `.env` file:
 
 ---
 
+## 🌐 Community & Documentation Translations
+
+Help us make Kizuna accessible to homelabbers worldwide! Check out the [Translation Guide](docs/i18n/README.md) to contribute a translation in your language.
+
+---
+
 ## 📄 License
 
-Kizuna is licensed under the [MIT License](LICENSE).
+Kizuna is open-source software licensed under the [MIT License](LICENSE).

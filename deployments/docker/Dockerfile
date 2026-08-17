@@ -4,13 +4,11 @@
 FROM node:22-alpine AS web-builder
 WORKDIR /app/web
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-COPY web/package.json web/pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile || pnpm install
+COPY web/package.json ./
+RUN npm install
 
 COPY web/ ./
-RUN pnpm build
+RUN npm run build
 
 # ==============================================================================
 # Stage 2: Compile Pure Go Single Binary
@@ -30,7 +28,7 @@ COPY cmd/ cmd/
 COPY --from=web-builder /app/internal/embedded/dist internal/embedded/dist
 
 RUN CGO_ENABLED=0 GOOS=linux go build \
-    -ldflags="-s -w -X main.Version=0.1.0-alpha" \
+    -ldflags="-s -w -X main.Version=0.2.0" \
     -o /app/kizuna ./cmd/kizuna
 
 # ==============================================================================

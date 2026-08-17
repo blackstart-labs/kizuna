@@ -1,7 +1,7 @@
 .PHONY: all build test lint dev clean docker
 
 BINARY_NAME=bin/kizuna
-VERSION=0.1.0-alpha
+VERSION=0.2.0
 
 all: test build
 
@@ -29,7 +29,7 @@ dev: build-frontend
 
 ## Build multi-stage Docker image
 docker:
-	docker build -t blackstart-labs/kizuna:$(VERSION) -f deployments/docker/Dockerfile .
+	docker build -t marufsarker/kizuna:$(VERSION) -t marufsarker/kizuna:latest -f Dockerfile .
 
 clean:
 	rm -rf bin/ $(BINARY_NAME) internal/embedded/dist/ kizuna.db*
