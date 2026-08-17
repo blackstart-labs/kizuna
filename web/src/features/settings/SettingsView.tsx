@@ -83,10 +83,26 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ metrics, loading }) 
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-md)' }}>
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Docker Engine Socket</div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>unix:///var/run/docker.sock</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Docker Engine Driver</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Native Unix domain socket (/var/run/docker.sock)</div>
             </div>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>Ready for Phase 2</span>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--status-online)' }}>Connected</span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-md)' }}>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Proxmox VE Driver</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>PVE REST API (QEMU VMs, LXC containers & ZFS pools)</div>
+            </div>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ready / Configurable</span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-md)' }}>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Uptime Kuma Sync</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Heartbeat webhook & status page synchronization</div>
+            </div>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ready / Configurable</span>
           </div>
         </div>
       </div>

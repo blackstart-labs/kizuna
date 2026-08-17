@@ -14,6 +14,16 @@ type Config struct {
 	DataDir      string
 	DockerSocket string
 	MetricsTTL   int // hours
+
+	// Proxmox VE
+	ProxmoxURL         string
+	ProxmoxTokenID     string
+	ProxmoxTokenSecret string
+	ProxmoxSkipVerify  bool
+
+	// Uptime Kuma
+	UptimeKumaURL string
+	UptimeKumaKey string
 }
 
 func Load() *Config {
@@ -26,15 +36,29 @@ func Load() *Config {
 	dockerSocket := getEnv("KIZUNA_DOCKER_SOCKET", "/var/run/docker.sock")
 	metricsTTL := getEnvInt("KIZUNA_METRICS_TTL_HOURS", 48)
 
+	pveURL := getEnv("KIZUNA_PROXMOX_URL", "")
+	pveTokenID := getEnv("KIZUNA_PROXMOX_TOKEN_ID", "")
+	pveTokenSecret := getEnv("KIZUNA_PROXMOX_TOKEN_SECRET", "")
+	pveSkipVerify := getEnvBool("KIZUNA_PROXMOX_SKIP_VERIFY", true)
+
+	kumaURL := getEnv("KIZUNA_UPTIME_KUMA_URL", "")
+	kumaKey := getEnv("KIZUNA_UPTIME_KUMA_KEY", "")
+
 	return &Config{
-		Port:         port,
-		Host:         host,
-		DBPath:       dbPath,
-		DemoMode:     demoMode,
-		LogLevel:     logLevel,
-		DataDir:      dataDir,
-		DockerSocket: dockerSocket,
-		MetricsTTL:   metricsTTL,
+		Port:                port,
+		Host:                host,
+		DBPath:              dbPath,
+		DemoMode:            demoMode,
+		LogLevel:            logLevel,
+		DataDir:             dataDir,
+		DockerSocket:        dockerSocket,
+		MetricsTTL:          metricsTTL,
+		ProxmoxURL:          pveURL,
+		ProxmoxTokenID:      pveTokenID,
+		ProxmoxTokenSecret:  pveTokenSecret,
+		ProxmoxSkipVerify:   pveSkipVerify,
+		UptimeKumaURL:       kumaURL,
+		UptimeKumaKey:       kumaKey,
 	}
 }
 

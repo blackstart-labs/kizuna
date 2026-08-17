@@ -53,7 +53,16 @@ func main() {
 	log.Printf("[DB] Connected to SQLite database at: %s (WAL mode active)", cfg.DBPath)
 
 	// Initialize Integration Manager
-	mgr := integration.NewManager(cfg.DemoMode, cfg.DockerSocket)
+	mgr := integration.NewManager(integration.ManagerConfig{
+		DemoMode:           cfg.DemoMode,
+		DockerSocket:       cfg.DockerSocket,
+		ProxmoxURL:         cfg.ProxmoxURL,
+		ProxmoxTokenID:     cfg.ProxmoxTokenID,
+		ProxmoxTokenSecret: cfg.ProxmoxTokenSecret,
+		ProxmoxSkipVerify:  cfg.ProxmoxSkipVerify,
+		UptimeKumaURL:      cfg.UptimeKumaURL,
+		UptimeKumaKey:      cfg.UptimeKumaKey,
+	})
 
 	// Initialize Business Logic Control Service
 	ctrlService := service.NewControlService(db, mgr, Version)
