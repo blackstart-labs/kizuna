@@ -13,6 +13,7 @@ Welcome to **Kizuna**, your unified homelab control plane. This manual guides yo
 6. [Topology Graph & Blast Radius](#6-topology-graph--blast-radius)
 7. [Alerts & Incidents Management](#7-alerts--incidents-management)
 8. [Resource Optimizer & Dry-Run Mode](#8-resource-optimizer--dry-run-mode)
+9. [Reverse Proxy & Cloudflare Tunnel Setup](#9-reverse-proxy--cloudflare-tunnel-setup)
 
 ---
 
@@ -82,16 +83,9 @@ The **Resource Intelligence & Waste Optimizer** identifies reclaimable space:
 
 ---
 
-## 9. Settings, Feature Switches & Reverse Proxy / Tunnel Setup
+## 9. Reverse Proxy & Cloudflare Tunnel Setup
 
-### Feature Toggles
-Under the **Settings & Vitals** view, you can independently enable or disable specific intelligence modules:
-- **Resource Intelligence & Waste Optimizer**: Toggle automatic Docker layer and storage analysis on/off.
-- **Incident Correlation Engine**: Toggle alert grouping and root-cause calculation on/off.
-- **Host Thermal Sensors**: Toggle Linux sysfs hardware sensor reading on/off.
-*(All preferences are stored locally in your browser's persistent storage).*
-
-### Deterministic Port Configuration (Cloudflare Tunnels, Reverse Proxies)
+### Deterministic Port Configuration
 Kizuna strictly binds to the exact port configured, ensuring reliable integration with **Cloudflare Tunnels (`cloudflared`)**, **Nginx**, **Caddy**, **Traefik**, or **Tailscale**:
 - Default port: `8080` (or configured via `-port <number>` or `KIZUNA_PORT=<number>`).
 - If the port is already occupied, Kizuna fails fast with clear diagnostic instructions rather than silently shifting to a different port, preventing broken reverse proxy connections.
@@ -99,6 +93,7 @@ Kizuna strictly binds to the exact port configured, ensuring reliable integratio
 ```bash
 # Custom port configuration for Cloudflare Tunnel / Reverse Proxy
 ./bin/kizuna --port 3030
+
 # Or via environment variable:
 KIZUNA_PORT=3030 ./bin/kizuna
 ```
