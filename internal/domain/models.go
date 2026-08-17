@@ -74,18 +74,27 @@ type Container struct {
 	UpdatedAt        time.Time `json:"updated_at"`
 }
 
+// IncidentTimelineEvent represents a chronological step in an incident's cascade.
+type IncidentTimelineEvent struct {
+	Timestamp time.Time `json:"timestamp"`
+	Component string    `json:"component"`
+	Message   string    `json:"message"`
+	Type      string    `json:"type"` // "trigger", "cascade", "mitigation", "resolution"
+}
+
 // Incident represents a correlated multi-service or infrastructure event.
 type Incident struct {
-	ID               string    `json:"id"`
-	Title            string    `json:"title"`
-	Summary          string    `json:"summary"`
-	Severity         string    `json:"severity"` // "critical", "warning", "info"
-	Status           string    `json:"status"`   // "active", "mitigated", "resolved"
-	RootCauseType    string    `json:"root_cause_type,omitempty"` // "host", "network", "dependency", "container"
-	RootCauseID      string    `json:"root_cause_id,omitempty"`
-	ImpactedServices []string  `json:"impacted_services"`
-	StartedAt        time.Time `json:"started_at"`
-	ResolvedAt       *time.Time`json:"resolved_at,omitempty"`
+	ID               string                  `json:"id"`
+	Title            string                  `json:"title"`
+	Summary          string                  `json:"summary"`
+	Severity         string                  `json:"severity"` // "critical", "warning", "info"
+	Status           string                  `json:"status"`   // "active", "mitigated", "resolved"
+	RootCauseType    string                  `json:"root_cause_type,omitempty"` // "host", "network", "dependency", "container"
+	RootCauseID      string                  `json:"root_cause_id,omitempty"`
+	ImpactedServices []string                `json:"impacted_services"`
+	Events           []IncidentTimelineEvent `json:"events,omitempty"`
+	StartedAt        time.Time               `json:"started_at"`
+	ResolvedAt       *time.Time              `json:"resolved_at,omitempty"`
 }
 
 // Event represents an immutable timestamped event entry.
