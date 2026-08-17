@@ -269,10 +269,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ summary, loading }
 
             <div style={{ padding: '12px 14px', backgroundColor: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Raise immich-ml-worker Memory Limit</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Prevent OOM restart crash loops</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>Enable WAL Mode on PostgreSQL</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Improve write throughput and query latency</div>
               </div>
-              <StatusBadge status="critical" label="Crash Loop" />
+              <StatusBadge status="info" label="Database Tip" />
             </div>
           </div>
         </div>
