@@ -20,7 +20,7 @@ import (
 	"github.com/blackstart-labs/kizuna/internal/service"
 )
 
-var Version = "0.1.0-alpha"
+var Version = "0.2.0"
 
 func main() {
 	demoFlag := flag.Bool("demo", false, "Run Kizuna with built-in realistic homelab demo data")

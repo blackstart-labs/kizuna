@@ -1,0 +1,92 @@
+# Kizuna GitHub Issue & Pull Request Label Taxonomy
+# Compatible with GitHub label sync tools (e.g. EndBug/label-sync or actions)
+
+- name: "bug"
+  color: "d73a4a"
+  description: "Something isn't working as expected"
+
+- name: "enhancement"
+  color: "a2eeef"
+  description: "New feature, driver, or capability request"
+
+- name: "documentation"
+  color: "0075ca"
+  description: "Improvements or additions to documentation and guides"
+
+- name: "good first issue"
+  color: "7057ff"
+  description: "Good for newcomers to contribute"
+
+- name: "help wanted"
+  color: "008672"
+  description: "Extra attention or community contribution is needed"
+
+- name: "performance"
+  color: "fbca04"
+  description: "Performance optimizations and memory reduction"
+
+- name: "security"
+  color: "ee0701"
+  description: "Security advisories, permission checks, and token security"
+
+- name: "refactor"
+  color: "cfd3d7"
+  description: "Code refactoring without behavioral changes"
+
+# Component & Subsystem Labels
+- name: "backend"
+  color: "0052cc"
+  description: "Go core control plane, HTTP handlers, and services"
+
+- name: "frontend"
+  color: "61dafb"
+  description: "React 19, Vite, TypeScript, and UI components"
+
+- name: "database"
+  color: "f9d0c4"
+  description: "SQLite database engine, schemas, and queries"
+
+- name: "integrations"
+  color: "bfdadc"
+  description: "Docker socket, Proxmox VE, Uptime Kuma, and sensors"
+
+- name: "monitoring"
+  color: "5319e7"
+  description: "Alert lifecycle, telemetry sparklines, and metric series"
+
+- name: "topology"
+  color: "1d76db"
+  description: "Dependency matrix and outage blast radius analysis"
+
+- name: "optimizer"
+  color: "0e8a16"
+  description: "Resource intelligence, waste detection, and dry-run cleanup"
+
+- name: "docker"
+  color: "2496ed"
+  description: "Dockerfile, compose files, and container deployments"
+
+- name: "ci/cd"
+  color: "e99695"
+  description: "GitHub Actions workflows, Makefile, and build pipelines"
+
+- name: "i18n"
+  color: "e4e669"
+  description: "Translations and internationalization docs"
+
+# Workflow State Labels
+- name: "needs-review"
+  color: "fbca04"
+  description: "Waiting for maintainer review"
+
+- name: "in-progress"
+  color: "c2e0c6"
+  description: "Currently being worked on"
+
+- name: "blocked"
+  color: "b60205"
+  description: "Blocked on external dependency or design decision"
+
+- name: "ready-to-merge"
+  color: "0e8a16"
+  description: "Approved and ready to merge into main"
