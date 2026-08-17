@@ -1,20 +1,24 @@
 <div align="center">
 
-<img src="assets/kizuna_logo.jpg" alt="Kizuna Logo" width="180" style="border-radius: 24px; box-shadow: 0 8px 32px rgba(6, 182, 212, 0.25); margin-bottom: 16px;" />
+<a href="#-key-features">
+  <img src="assets/logo.png" alt="Kizuna Logo" width="140" />
+</a>
 
 # Kizuna · 絆
 
-### *"Your homelab. One control plane."*
+**Your homelab. One control plane.**
 
 [![CI](https://github.com/maruf-pfc/kizuna/actions/workflows/ci.yml/badge.svg)](https://github.com/maruf-pfc/kizuna/actions)
-[![Docker Image](https://img.shields.io/docker/v/marufsarker/kizuna?sort=semver&logo=docker&label=Docker%20Hub&color=0284c7)](https://hub.docker.com/r/marufsarker/kizuna)
-[![Image Size](https://img.shields.io/badge/Image%20Size-%3C%2025%20MB-06b6d4?logo=docker)](Dockerfile)
-[![Memory Footprint](https://img.shields.io/badge/RAM%20Footprint-%3C%2025%20MB-10b981?logo=speedtest)](cmd/kizuna)
+[![Docker Hub](https://img.shields.io/docker/v/marufsarker/kizuna?sort=semver&logo=docker&label=Docker%20Hub&color=0284c7)](https://hub.docker.com/r/marufsarker/kizuna)
+[![Image Size](https://img.shields.io/badge/Docker%20Image-%3C%2020%20MB-06b6d4?logo=docker)](Dockerfile)
+[![Memory Footprint](https://img.shields.io/badge/RAM%20Usage-%3C%2025%20MB-10b981?logo=speedtest)](cmd/kizuna)
 [![Go Report Card](https://goreportcard.com/badge/github.com/maruf-pfc/kizuna)](https://goreportcard.com/report/github.com/maruf-pfc/kizuna)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/maruf-pfc/kizuna?style=social)](https://github.com/maruf-pfc/kizuna)
 
-*An ultra-lightweight, single-binary homelab control plane that integrates, aggregates, correlates, and visualizes your infrastructure without replacing specialized tools.*
+<p align="center">
+  <em>An ultra-lightweight, single-binary homelab control plane that integrates, aggregates, correlates, and visualizes your infrastructure without replacing specialized tools.</em>
+</p>
 
 ---
 
@@ -24,10 +28,10 @@
 **[🔌 Integrations Guide](docs/INTEGRATIONS.md)** •
 **[🤝 Contributing](docs/CONTRIBUTING.md)**
 
-**Translations (i18n):**
-[🇯🇵 日本語](docs/i18n/USER_MANUAL.ja.md) |
-[🇪🇸 Español](docs/i18n/USER_MANUAL.es.md) |
-[🇩🇪 Deutsch](docs/i18n/USER_MANUAL.de.md) |
+**Translations:**
+[🇯🇵 日本語](docs/i18n/USER_MANUAL.ja.md) &nbsp;•&nbsp;
+[🇪🇸 Español](docs/i18n/USER_MANUAL.es.md) &nbsp;•&nbsp;
+[🇩🇪 Deutsch](docs/i18n/USER_MANUAL.de.md) &nbsp;•&nbsp;
 [🇨🇳 简体中文](docs/i18n/USER_MANUAL.zh-CN.md)
 
 </div>
