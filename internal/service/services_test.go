@@ -16,7 +16,7 @@ func TestGetHealthSummary(t *testing.T) {
 	}
 	defer db.Close()
 
-	mgr := integration.NewManager(true) // Demo mode active
+	mgr := integration.NewManager(true, "disabled") // Demo mode active
 	svc := NewControlService(db, mgr, "0.1.0-test")
 
 	ctx := context.Background()
@@ -59,7 +59,7 @@ func TestListServicesFiltering(t *testing.T) {
 	}
 	defer db.Close()
 
-	mgr := integration.NewManager(true)
+	mgr := integration.NewManager(true, "disabled")
 	svc := NewControlService(db, mgr, "0.1.0-test")
 
 	all := svc.ListServices("")

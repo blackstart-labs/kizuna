@@ -53,7 +53,7 @@ func main() {
 	log.Printf("[DB] Connected to SQLite database at: %s (WAL mode active)", cfg.DBPath)
 
 	// Initialize Integration Manager
-	mgr := integration.NewManager(cfg.DemoMode)
+	mgr := integration.NewManager(cfg.DemoMode, cfg.DockerSocket)
 
 	// Initialize Business Logic Control Service
 	ctrlService := service.NewControlService(db, mgr, Version)
