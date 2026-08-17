@@ -9,6 +9,7 @@ import (
 	"github.com/blackstart-labs/kizuna/internal/integration/demo"
 	"github.com/blackstart-labs/kizuna/internal/integration/docker"
 	"github.com/blackstart-labs/kizuna/internal/integration/proxmox"
+	"github.com/blackstart-labs/kizuna/internal/integration/sensors"
 	"github.com/blackstart-labs/kizuna/internal/integration/uptimekuma"
 )
 
@@ -46,12 +47,15 @@ func NewManager(cfg ManagerConfig) *Manager {
 		m.RegisterDriver(demo.New())
 	}
 
-	// Register Docker driver if socket is accessible and not explicitly disabled
+	// Register Docker and host hardware sensors driver if socket is accessible and not explicitly disabled
 	if cfg.DockerSocket != "disabled" {
 		docDriver := docker.New(cfg.DockerSocket)
 		if docDriver.IsAvailable() {
 			m.dockerDriver = docDriver
 			m.RegisterDriver(docDriver)
+		}
+		if !cfg.DemoMode {
+			m.RegisterDriver(sensors.New())
 		}
 	}
 
