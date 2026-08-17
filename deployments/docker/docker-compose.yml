@@ -1,6 +1,6 @@
 services:
   kizuna:
-    image: blackstart-labs/kizuna:latest
+    image: marufsarker/kizuna:latest
     container_name: kizuna
     restart: unless-stopped
     ports:

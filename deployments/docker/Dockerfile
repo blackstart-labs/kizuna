@@ -4,13 +4,11 @@
 FROM node:22-alpine AS web-builder
 WORKDIR /app/web
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-COPY web/package.json web/pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile || pnpm install
+COPY web/package.json ./
+RUN npm install
 
 COPY web/ ./
-RUN pnpm build
+RUN npm run build
 
 # ==============================================================================
 # Stage 2: Compile Pure Go Single Binary

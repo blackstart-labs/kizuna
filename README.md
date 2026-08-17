@@ -8,13 +8,13 @@
 
 **Your homelab. One control plane.**
 
-[![CI](https://github.com/maruf-pfc/kizuna/actions/workflows/ci.yml/badge.svg)](https://github.com/maruf-pfc/kizuna/actions)
+[![CI](https://github.com/blackstart-labs/kizuna/actions/workflows/ci.yml/badge.svg)](https://github.com/blackstart-labs/kizuna/actions)
 [![Docker Hub](https://img.shields.io/docker/v/marufsarker/kizuna?sort=semver&logo=docker&label=Docker%20Hub&color=0284c7)](https://hub.docker.com/r/marufsarker/kizuna)
 [![Image Size](https://img.shields.io/badge/Docker%20Image-%3C%2020%20MB-06b6d4?logo=docker)](Dockerfile)
 [![Memory Footprint](https://img.shields.io/badge/RAM%20Usage-%3C%2025%20MB-10b981?logo=speedtest)](cmd/kizuna)
-[![Go Report Card](https://goreportcard.com/badge/github.com/maruf-pfc/kizuna)](https://goreportcard.com/report/github.com/maruf-pfc/kizuna)
+[![Go Report Card](https://goreportcard.com/badge/github.com/blackstart-labs/kizuna)](https://goreportcard.com/report/github.com/blackstart-labs/kizuna)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/maruf-pfc/kizuna?style=social)](https://github.com/maruf-pfc/kizuna)
+[![GitHub Stars](https://img.shields.io/github/stars/blackstart-labs/kizuna?style=social)](https://github.com/blackstart-labs/kizuna)
 
 <p align="center">
   <em>An ultra-lightweight, single-binary homelab control plane that integrates, aggregates, correlates, and visualizes your infrastructure without replacing specialized tools.</em>
@@ -119,7 +119,7 @@ Access the control plane at **`http://localhost:8080`**.
 
 ### Option 2: Run Single Binary
 
-Download the compiled binary for your architecture from [Releases](https://github.com/maruf-pfc/kizuna/releases):
+Download the compiled binary for your architecture from [Releases](https://github.com/blackstart-labs/kizuna/releases):
 
 ```bash
 # Run standalone binary
@@ -135,7 +135,7 @@ KIZUNA_DEMO_MODE=true ./kizuna
 
 ```bash
 # Clone repository
-git clone https://github.com/maruf-pfc/kizuna.git
+git clone https://github.com/blackstart-labs/kizuna.git
 cd kizuna
 
 # Build frontend and single static binary

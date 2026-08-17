@@ -1,6 +1,6 @@
 services:
   kizuna:
-    image: blackstartlabs/kizuna:latest
+    image: marufsarker/kizuna:latest
     build:
       context: .
       dockerfile: Dockerfile

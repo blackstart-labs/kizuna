@@ -29,7 +29,7 @@ dev: build-frontend
 
 ## Build multi-stage Docker image
 docker:
-	docker build -t blackstart-labs/kizuna:$(VERSION) -f deployments/docker/Dockerfile .
+	docker build -t marufsarker/kizuna:$(VERSION) -t marufsarker/kizuna:latest -f Dockerfile .
 
 clean:
 	rm -rf bin/ $(BINARY_NAME) internal/embedded/dist/ kizuna.db*
