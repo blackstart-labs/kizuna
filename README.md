@@ -82,7 +82,9 @@ Homelab operators don't need another heavy enterprise monitoring stack that cons
 - 🕸️ **Infrastructure Topology & Blast Radius**: Interactive 3-tier dependency matrix. Selecting any node dynamically calculates its cascading outage blast radius.
 - 🚨 **Unified Alert & Incident Management**: Correlates multi-service flapping into single root-cause incident timelines with Prometheus webhook ingestion.
 - 📈 **24-Hour Telemetry Sparklines**: Lightweight, responsive SVG sparkline curves for Fleet CPU, RAM Pressure, ZFS Allocation, and Latency.
-- 💡 **Resource Intelligence & Waste Optimizer**: Detects unreferenced Docker images, dangling volumes, and memory limit bottlenecks with a built-in **Dry-Run Simulation Mode**.
+- 💡 **Resource Intelligence & Waste Optimizer**: Detects unreferenced Docker images, dangling volumes, and memory limit bottlenecks with a built-in **Dry-Run Simulation Mode** (0 KB database overhead).
+- 🎛️ **Granular Settings & Module Toggles**: Independently enable or disable the Waste Optimizer, Incident Correlation Engine, or Hardware Sensors.
+- 🛡️ **Predictable Reverse Proxy & Tunnel Compatibility**: Strict deterministic port binding (`--port` / `KIZUNA_PORT`) guarantees zero broken tunnels (**Cloudflare Tunnels (`cloudflared`)**, **Tailscale**, **Nginx**, **Traefik**, **Caddy**).
 
 ---
 

@@ -77,4 +77,28 @@ Understand multi-tiered relationships between physical nodes, database clusters,
 The **Resource Intelligence & Waste Optimizer** identifies reclaimable space:
 - **Dangling Docker Images**: Identifies unreferenced image layers and calculates reclaimable SSD storage.
 - **Dry-Run Simulation Toggle**: Check the *Dry-Run Simulation Mode* box to safely simulate a cleanup before executing any disk operations.
+- **Zero Overhead**: Runs purely in-memory (< 1.2 MB RAM) with zero disk database footprint.
 - **Dismiss**: Ignore intentional configurations with a single click.
+
+---
+
+## 9. Settings, Feature Switches & Reverse Proxy / Tunnel Setup
+
+### Feature Toggles
+Under the **Settings & Vitals** view, you can independently enable or disable specific intelligence modules:
+- **Resource Intelligence & Waste Optimizer**: Toggle automatic Docker layer and storage analysis on/off.
+- **Incident Correlation Engine**: Toggle alert grouping and root-cause calculation on/off.
+- **Host Thermal Sensors**: Toggle Linux sysfs hardware sensor reading on/off.
+*(All preferences are stored locally in your browser's persistent storage).*
+
+### Deterministic Port Configuration (Cloudflare Tunnels, Reverse Proxies)
+Kizuna strictly binds to the exact port configured, ensuring reliable integration with **Cloudflare Tunnels (`cloudflared`)**, **Nginx**, **Caddy**, **Traefik**, or **Tailscale**:
+- Default port: `8080` (or configured via `-port <number>` or `KIZUNA_PORT=<number>`).
+- If the port is already occupied, Kizuna fails fast with clear diagnostic instructions rather than silently shifting to a different port, preventing broken reverse proxy connections.
+
+```bash
+# Custom port configuration for Cloudflare Tunnel / Reverse Proxy
+./bin/kizuna --port 3030
+# Or via environment variable:
+KIZUNA_PORT=3030 ./bin/kizuna
+```

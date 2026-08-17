@@ -73,33 +73,13 @@ func main() {
 	frontendFS := embedded.GetFrontendFS()
 	router := api.NewRouter(apiHandler, frontendFS)
 
-	// Create TCP listener with intelligent port conflict fallback
-	var listener net.Listener
-	var actualPort = cfg.Port
-
-	initialListener, listenErr := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Host, cfg.Port))
+	// Create TCP listener on the configured port
+	listener, listenErr := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Host, cfg.Port))
 	if listenErr != nil {
-		if *portFlag == 0 {
-			// Try friendly homelab fallback ports
-			fallbackCandidates := []int{3030, 8081, 8082, 8085, 8095, 8888, 7070, 9099}
-			for _, candidatePort := range fallbackCandidates {
-				l, fbErr := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Host, candidatePort))
-				if fbErr == nil {
-					listener = l
-					actualPort = candidatePort
-					log.Printf("[HTTP] ⚡ Port %d in use; automatically bound to available port %d", cfg.Port, actualPort)
-					break
-				}
-			}
-		}
-		if listener == nil {
-			log.Fatalf("[FATAL] Could not bind to port %d: %v", cfg.Port, listenErr)
-		}
-	} else {
-		listener = initialListener
+		log.Fatalf("[FATAL] Port %d is already in use by another service.\n       Please stop the conflicting process, or specify a custom port using '--port <number>' or 'KIZUNA_PORT=<number>'.\n       Error: %v", cfg.Port, listenErr)
 	}
 
-	serverAddr := fmt.Sprintf("%s:%d", cfg.Host, actualPort)
+	serverAddr := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	srv := &http.Server{
 		Handler:      router,
 		ReadTimeout:  15 * time.Second,
