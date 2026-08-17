@@ -17,7 +17,7 @@ RUN go mod download
 COPY cmd/ cmd/
 COPY internal/ internal/
 COPY --from=web-builder /app/internal/embedded/dist internal/embedded/dist
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X main.Version=0.2.0" -o /app/kizuna ./cmd/kizuna
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X main.Version=0.3.0" -o /app/kizuna ./cmd/kizuna
 
 # Stage 3: Minimal Production Container (< 25 MB)
 FROM alpine:3.20

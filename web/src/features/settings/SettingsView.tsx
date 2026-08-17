@@ -57,7 +57,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ metrics, loading }) 
         <MetricCard
           title="Control Plane Uptime"
           value={`${uptimeHours} hrs`}
-          subValue={`v${metrics?.version || '0.2.0'}`}
+          subValue={`v${metrics?.version || '0.3.0'}`}
           icon={Clock}
           trend="Single binary"
         />

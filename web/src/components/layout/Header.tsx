@@ -15,6 +15,7 @@ export const Header: React.FC<HeaderProps> = ({ onRefresh, isRefreshing }) => {
     services: 'Service Registry',
     hosts: 'Physical Hosts & Nodes',
     containers: 'Container Workloads',
+    network: 'Connected Network Clients & ARP Discovery',
     topology: 'Infrastructure Dependency Topology',
     incidents: 'Correlated Incidents',
     optimizer: 'Resource Intelligence & Waste Optimizer',

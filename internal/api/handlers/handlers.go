@@ -258,6 +258,24 @@ func (h *APIHandler) GlobalSearch(w http.ResponseWriter, r *http.Request) {
 	respondJSON(w, http.StatusOK, results)
 }
 
+func (h *APIHandler) ListNetworkClients(w http.ResponseWriter, r *http.Request) {
+	clients, err := h.svc.ListNetworkClients(r.Context())
+	if err != nil {
+		http.Error(w, "Failed to scan network clients", http.StatusInternalServerError)
+		return
+	}
+	respondJSON(w, http.StatusOK, clients)
+}
+
+func (h *APIHandler) GetNetworkTelemetry(w http.ResponseWriter, r *http.Request) {
+	summary, err := h.svc.GetNetworkTelemetry(r.Context())
+	if err != nil {
+		http.Error(w, "Failed to fetch network telemetry", http.StatusInternalServerError)
+		return
+	}
+	respondJSON(w, http.StatusOK, summary)
+}
+
 func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)

@@ -74,14 +74,15 @@ Homelab operators don't need another heavy enterprise monitoring stack that cons
 
 ## ✨ Key Features
 
-- ⚡ **Global Command Palette (`⌘K` / `Ctrl+K`)**: Keyboard-first search across all registered services, physical hosts, and container workloads.
+- 🌐 **Connected Network Clients & ARP Discovery**: Scans Linux kernel ARP & neighbor tables (`/proc/net/arp`) to discover all real LAN devices, IP addresses, MAC addresses, hostnames, and hardware vendors (Apple, Raspberry Pi, ASUS, Espressif IoT, Intel, Docker Bridge) with device classification.
+- 📊 **Grafana-Style Live Telemetry Dashboards**: Sleek multi-series SVG area charts with live gradients, crosshair cursors, hover value tooltips, and Min/Max/Avg statistical telemetry panels for Fleet CPU, RAM Pressure, Storage Occupancy, and Real-Time Network Bandwidth (Ingress RX / Egress TX from `/proc/net/dev`).
+- ⚡ **Global Command Palette (`⌘K` / `Ctrl+K`)**: Keyboard-first search across all registered services, physical hosts, network clients, and container workloads.
 - 🐳 **Native Docker Socket Driver**: Direct `/var/run/docker.sock` communication over Unix sockets with zero 3rd-party Docker SDK dependencies (< 25 MB image footprint). Supports safe container lifecycle controls (Restart, Stop with confirmation guard, Start).
 - 🖥️ **Proxmox VE & Hypervisor Driver**: Auto-discovers physical nodes, CPU cores, RAM pressure, ZFS storage pool occupancy, and LXC containers via API Token auth.
 - ⏱️ **Uptime Kuma Sync**: Ingests heartbeat telemetry, monitor status (up/down/pending), uptime percentages, and ping latencies.
 - 🌡️ **Hardware & Thermal Telemetry**: Reads host CPU core temperatures via Linux `/sys/class/thermal` and memory allocation from `/proc/meminfo`.
 - 🕸️ **Infrastructure Topology & Blast Radius**: Interactive 3-tier dependency matrix. Selecting any node dynamically calculates its cascading outage blast radius.
 - 🚨 **Unified Alert & Incident Management**: Correlates multi-service flapping into single root-cause incident timelines with Prometheus webhook ingestion.
-- 📈 **24-Hour Telemetry Sparklines**: Lightweight, responsive SVG sparkline curves for Fleet CPU, RAM Pressure, ZFS Allocation, and Latency.
 - 💡 **Resource Intelligence & Waste Optimizer**: Native Go metadata engine (< 1.2 MB RAM, 0 KB disk footprint) to detect unreferenced Docker images and storage waste with **Dry-Run Simulation Mode**.
 - 🛡️ **Predictable Reverse Proxy & Tunnel Compatibility**: Strict deterministic port binding (`--port` / `KIZUNA_PORT`) guarantees zero broken tunnels (**Cloudflare Tunnels (`cloudflared`)**, **Tailscale**, **Nginx**, **Traefik**, **Caddy**).
 

@@ -8,15 +8,17 @@ import (
 	"github.com/blackstart-labs/kizuna/internal/domain"
 	"github.com/blackstart-labs/kizuna/internal/integration/demo"
 	"github.com/blackstart-labs/kizuna/internal/integration/docker"
+	"github.com/blackstart-labs/kizuna/internal/integration/network"
 	"github.com/blackstart-labs/kizuna/internal/integration/proxmox"
 	"github.com/blackstart-labs/kizuna/internal/integration/sensors"
 	"github.com/blackstart-labs/kizuna/internal/integration/uptimekuma"
 )
 
 type Manager struct {
-	mu           sync.RWMutex
-	drivers      []Driver
-	dockerDriver *docker.DockerDriver
+	mu            sync.RWMutex
+	drivers       []Driver
+	dockerDriver  *docker.DockerDriver
+	networkDriver *network.NetworkDriver
 
 	// Cached state
 	services        []domain.Service
@@ -58,6 +60,10 @@ func NewManager(cfg ManagerConfig) *Manager {
 			m.RegisterDriver(sensors.New())
 		}
 	}
+
+	// Always initialize real network driver for ARP client discovery & bandwidth telemetry
+	m.networkDriver = network.NewNetworkDriver()
+	m.RegisterDriver(m.networkDriver)
 
 	// Register Proxmox VE driver if configured
 	if cfg.ProxmoxURL != "" && cfg.ProxmoxTokenID != "" && cfg.ProxmoxTokenSecret != "" {
@@ -177,4 +183,18 @@ func (m *Manager) StartContainer(ctx context.Context, id string) error {
 		return m.dockerDriver.StartContainer(ctx, id)
 	}
 	return nil
+}
+
+func (m *Manager) ScanNetworkClients(ctx context.Context) ([]domain.NetworkClient, error) {
+	if m.networkDriver != nil {
+		return m.networkDriver.ScanClients(ctx)
+	}
+	return []domain.NetworkClient{}, nil
+}
+
+func (m *Manager) GetNetworkThroughput(ctx context.Context) ([]domain.NetworkInterfaceMetric, error) {
+	if m.networkDriver != nil {
+		return m.networkDriver.GetThroughput(ctx)
+	}
+	return []domain.NetworkInterfaceMetric{}, nil
 }

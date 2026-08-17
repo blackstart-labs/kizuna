@@ -199,3 +199,43 @@ export interface HomelabTrends {
   storage_trend: MetricSeries;
   latency_trend: MetricSeries;
 }
+
+export interface NetworkClient {
+  id: string;
+  ip: string;
+  mac: string;
+  hostname: string;
+  vendor: string;
+  interface: string;
+  device_type: 'router' | 'host' | 'server' | 'container' | 'workstation' | 'iot' | 'phone' | 'unknown';
+  state: 'active' | 'reachable' | 'stale';
+  is_gateway: boolean;
+  last_seen: string;
+}
+
+export interface NetworkInterfaceMetric {
+  interface: string;
+  rx_bytes_sec: number;
+  tx_bytes_sec: number;
+  total_rx_bytes: number;
+  total_tx_bytes: number;
+  timestamp: string;
+}
+
+export interface NetworkThroughputPoint {
+  timestamp: string;
+  rx_kbps: number;
+  tx_kbps: number;
+}
+
+export interface NetworkTelemetrySummary {
+  total_clients: number;
+  active_clients: number;
+  gateway_ip: string;
+  primary_interface: string;
+  total_rx_rate_kbps: number;
+  total_tx_rate_kbps: number;
+  interfaces: NetworkInterfaceMetric[];
+  bandwidth_history: NetworkThroughputPoint[];
+}
+

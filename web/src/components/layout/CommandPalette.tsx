@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Layers, Server, Box, GitFork, AlertOctagon, ExternalLink, X } from 'lucide-react';
+import { Search, Layers, Server, Box, GitFork, AlertOctagon, ExternalLink, X, Wifi } from 'lucide-react';
 import { useAppStore, ActiveTab } from '../../stores/useAppStore';
 import { SearchResult } from '../../types';
 
@@ -57,6 +57,7 @@ export const CommandPalette: React.FC = () => {
     { id: 'act-srv', label: 'Browse All Services', tab: 'services', icon: Layers },
     { id: 'act-hst', label: 'View Physical Hosts & Hypervisors', tab: 'hosts', icon: Server },
     { id: 'act-cnt', label: 'Inspect Container Workloads', tab: 'containers', icon: Box },
+    { id: 'act-net', label: 'Inspect Connected Network Clients & Devices', tab: 'network', icon: Wifi },
     { id: 'act-top', label: 'Inspect Infrastructure Dependency Graph', tab: 'topology', icon: GitFork },
     { id: 'act-inc', label: 'Review Active Incidents', tab: 'incidents', icon: AlertOctagon },
   ];
