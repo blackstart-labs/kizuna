@@ -177,3 +177,15 @@ func (s *ControlService) ListIncidents() []domain.Incident {
 func (s *ControlService) ListRecommendations() []domain.Recommendation {
 	return s.mgr.GetRecommendations()
 }
+
+func (s *ControlService) RestartContainer(ctx context.Context, id string) error {
+	return s.mgr.RestartContainer(ctx, id)
+}
+
+func (s *ControlService) StopContainer(ctx context.Context, id string) error {
+	return s.mgr.StopContainer(ctx, id)
+}
+
+func (s *ControlService) StartContainer(ctx context.Context, id string) error {
+	return s.mgr.StartContainer(ctx, id)
+}

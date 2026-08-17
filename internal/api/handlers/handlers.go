@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/blackstart-labs/kizuna/internal/service"
+	"github.com/go-chi/chi/v5"
 )
 
 type APIHandler struct {
@@ -42,6 +43,52 @@ func (h *APIHandler) ListHosts(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandler) ListContainers(w http.ResponseWriter, r *http.Request) {
 	containers := h.svc.ListContainers()
 	respondJSON(w, http.StatusOK, containers)
+}
+
+func (h *APIHandler) RestartContainer(w http.ResponseWriter, r *http.Request) {
+	id := chiURLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing container id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.svc.RestartContainer(r.Context(), id); err != nil {
+		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	respondJSON(w, http.StatusOK, map[string]string{"status": "restarted", "id": id})
+}
+
+func (h *APIHandler) StopContainer(w http.ResponseWriter, r *http.Request) {
+	id := chiURLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing container id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.svc.StopContainer(r.Context(), id); err != nil {
+		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	respondJSON(w, http.StatusOK, map[string]string{"status": "stopped", "id": id})
+}
+
+func (h *APIHandler) StartContainer(w http.ResponseWriter, r *http.Request) {
+	id := chiURLParam(r, "id")
+	if id == "" {
+		http.Error(w, "missing container id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.svc.StartContainer(r.Context(), id); err != nil {
+		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	respondJSON(w, http.StatusOK, map[string]string{"status": "started", "id": id})
+}
+
+func chiURLParam(r *http.Request, key string) string {
+	return chi.URLParam(r, key)
 }
 
 func (h *APIHandler) ListIncidents(w http.ResponseWriter, r *http.Request) {

@@ -7,11 +7,13 @@ import (
 
 	"github.com/blackstart-labs/kizuna/internal/domain"
 	"github.com/blackstart-labs/kizuna/internal/integration/demo"
+	"github.com/blackstart-labs/kizuna/internal/integration/docker"
 )
 
 type Manager struct {
-	mu      sync.RWMutex
-	drivers []Driver
+	mu           sync.RWMutex
+	drivers      []Driver
+	dockerDriver *docker.DockerDriver
 
 	// Cached state
 	services        []domain.Service
@@ -22,13 +24,22 @@ type Manager struct {
 	lastSync        time.Time
 }
 
-func NewManager(demoMode bool) *Manager {
+func NewManager(demoMode bool, dockerSocket string) *Manager {
 	m := &Manager{
 		drivers: make([]Driver, 0),
 	}
 
 	if demoMode {
 		m.RegisterDriver(demo.New())
+	}
+
+	// Register Docker driver if socket is accessible and not explicitly disabled
+	if dockerSocket != "disabled" {
+		docDriver := docker.New(dockerSocket)
+		if docDriver.IsAvailable() {
+			m.dockerDriver = docDriver
+			m.RegisterDriver(docDriver)
+		}
 	}
 
 	// Trigger initial sync
@@ -108,4 +119,25 @@ func (m *Manager) GetRecommendations() []domain.Recommendation {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.recommendations
+}
+
+func (m *Manager) RestartContainer(ctx context.Context, id string) error {
+	if m.dockerDriver != nil {
+		return m.dockerDriver.RestartContainer(ctx, id)
+	}
+	return nil // Graceful no-op in pure demo mode
+}
+
+func (m *Manager) StopContainer(ctx context.Context, id string) error {
+	if m.dockerDriver != nil {
+		return m.dockerDriver.StopContainer(ctx, id)
+	}
+	return nil
+}
+
+func (m *Manager) StartContainer(ctx context.Context, id string) error {
+	if m.dockerDriver != nil {
+		return m.dockerDriver.StartContainer(ctx, id)
+	}
+	return nil
 }

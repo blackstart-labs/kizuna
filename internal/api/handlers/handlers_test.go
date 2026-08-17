@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +11,7 @@ import (
 	"github.com/blackstart-labs/kizuna/internal/domain"
 	"github.com/blackstart-labs/kizuna/internal/integration"
 	"github.com/blackstart-labs/kizuna/internal/service"
+	"github.com/go-chi/chi/v5"
 )
 
 func setupTestHandler(t *testing.T) *APIHandler {
@@ -19,7 +21,7 @@ func setupTestHandler(t *testing.T) *APIHandler {
 	}
 	t.Cleanup(func() { db.Close() })
 
-	mgr := integration.NewManager(true)
+	mgr := integration.NewManager(true, "disabled")
 	svc := service.NewControlService(db, mgr, "0.1.0-test")
 	return NewAPIHandler(svc)
 }
@@ -87,5 +89,37 @@ func TestGlobalSearch(t *testing.T) {
 
 	if len(results) == 0 {
 		t.Errorf("Expected search results for 'forgejo', got 0")
+	}
+}
+
+func TestContainerLifecycleActions(t *testing.T) {
+	h := setupTestHandler(t)
+
+	// In demo mode without real docker socket, actions gracefully return success
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("id", "test-cnt")
+
+	req := httptest.NewRequest("POST", "/api/v1/containers/test-cnt/restart", nil)
+	req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+	w := httptest.NewRecorder()
+	h.RestartContainer(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", w.Code)
+	}
+
+	reqStop := httptest.NewRequest("POST", "/api/v1/containers/test-cnt/stop", nil)
+	reqStop = reqStop.WithContext(context.WithValue(reqStop.Context(), chi.RouteCtxKey, rctx))
+	wStop := httptest.NewRecorder()
+	h.StopContainer(wStop, reqStop)
+	if wStop.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", wStop.Code)
+	}
+
+	reqStart := httptest.NewRequest("POST", "/api/v1/containers/test-cnt/start", nil)
+	reqStart = reqStart.WithContext(context.WithValue(reqStart.Context(), chi.RouteCtxKey, rctx))
+	wStart := httptest.NewRecorder()
+	h.StartContainer(wStart, reqStart)
+	if wStart.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", wStart.Code)
 	}
 }
