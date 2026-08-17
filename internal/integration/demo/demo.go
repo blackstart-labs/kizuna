@@ -467,7 +467,12 @@ func (d *DemoDriver) SyncIncidents(ctx context.Context) ([]domain.Incident, erro
 			RootCauseType:    "host",
 			RootCauseID:      "host-atlas-02",
 			ImpactedServices: []string{"Immich Photo Cloud", "VM-HomeAssistant"},
-			StartedAt:        now.Add(-2 * time.Hour),
+			Events: []domain.IncidentTimelineEvent{
+				{Timestamp: now.Add(-120 * time.Minute), Component: "ZFS Storage Pool", Message: "Pool rpool reached 85% warning threshold", Type: "trigger"},
+				{Timestamp: now.Add(-45 * time.Minute), Component: "Proxmox Hypervisor", Message: "Storage pool allocation crossed 91.0%", Type: "cascade"},
+				{Timestamp: now.Add(-10 * time.Minute), Component: "Kizuna Correlator", Message: "Correlated degraded disk performance on VM-HomeAssistant", Type: "cascade"},
+			},
+			StartedAt: now.Add(-2 * time.Hour),
 		},
 		{
 			ID:               "inc-2026-0817-02",
@@ -478,7 +483,12 @@ func (d *DemoDriver) SyncIncidents(ctx context.Context) ([]domain.Incident, erro
 			RootCauseType:    "container",
 			RootCauseID:      "cnt-flapping-worker",
 			ImpactedServices: []string{"Immich Photo Cloud"},
-			StartedAt:        now.Add(-4 * time.Hour),
+			Events: []domain.IncidentTimelineEvent{
+				{Timestamp: now.Add(-240 * time.Minute), Component: "Docker Engine", Message: "Container exceeded 4.0GB cgroup RAM allocation", Type: "trigger"},
+				{Timestamp: now.Add(-180 * time.Minute), Component: "Linux OOM Killer", Message: "OOM killer killed PID 18491 (python3 / worker.py)", Type: "cascade"},
+				{Timestamp: now.Add(-60 * time.Minute), Component: "Docker Supervisor", Message: "Restart limit hit: 17 continuous crash loops", Type: "cascade"},
+			},
+			StartedAt: now.Add(-4 * time.Hour),
 		},
 	}, nil
 }

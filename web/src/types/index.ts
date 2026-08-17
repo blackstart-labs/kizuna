@@ -63,6 +63,13 @@ export interface Container {
   updated_at: string;
 }
 
+export interface IncidentTimelineEvent {
+  timestamp: string;
+  component: string;
+  message: string;
+  type: 'trigger' | 'cascade' | 'mitigation' | 'resolution';
+}
+
 export interface Incident {
   id: string;
   title: string;
@@ -72,6 +79,7 @@ export interface Incident {
   root_cause_type?: string;
   root_cause_id?: string;
   impacted_services: string[];
+  events?: IncidentTimelineEvent[];
   started_at: string;
   resolved_at?: string;
 }
